@@ -19,11 +19,11 @@ const accessKeySecret = process.env["ALI_SDK_STS_SECRET"]
 const accessKeyId = process.env["ALI_SDK_STS_ID"]
 const bucket = process.env["OSS_DATA_BUCKET"]
 const NODE_ENV = process.env["NODE_ENV"]
-const PALADIN_ENV = process.env["PALADIN_ENV"]
+const DOCKER_TYPE = process.env["DOCKER_TYPE"]
 
 
 
-let envArgs: Array<string> = ["LOG_LEVEL", "NODE_ENV", "PALADIN_ENV", "ALI_SDK_OSS_ENDPOINT", "OSS_DATA_BUCKET", "ALI_SDK_STS_SECRET", "ALI_SDK_STS_ID"]
+let envArgs: Array<string> = ["LOG_LEVEL", "NODE_ENV", "ALI_SDK_OSS_ENDPOINT", "OSS_DATA_BUCKET", "ALI_SDK_STS_SECRET", "ALI_SDK_STS_ID"]
 
 envArgs.forEach((item: string) => {
   let ret = false;
@@ -74,28 +74,30 @@ function getImageName(key: string) {
 const timeoutOption = {timeout: 10 * 1000} // timeout is 10 seconds
  
 async function run(config: config.Config) {
+  console.time(config.prodName)
   const memClient = createMemClient()
   const browser = await puppeteer.launch({
     defaultViewport: {
       width: 1920,
       height: 1080
     },
-    args: ['--lang=zh-cn']
+    args: ['--lang=zh-cn'] 
   });
   
   logger.info("browser created")
 
   const page = await createPage(browser)
-  await page.goto(config.mainUri, timeoutOption)
+  let response = await page.goto(config.mainUri, timeoutOption)
+  logger.info("enter page: %s", response.url())
+
   await page.waitForSelector(config.loginButtonClass, timeoutOption)
   logger.info("login button shown")
 
-  await page.click('.login-button')
-  let response = await page.waitForNavigation(timeoutOption);
+  await page.click(config.loginButtonClass)
+  response = await page.waitForNavigation(timeoutOption); 
   logger.info("go to uri is %s", response.url())
 
   response = await page.waitForNavigation(timeoutOption);
-  // logger.info("go to uri is %s", response.url())
 
   const veriCodeRes = await page.waitForResponse(
     response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200, timeoutOption);
@@ -134,7 +136,9 @@ async function run(config: config.Config) {
       logger.info("uri change to %s", response.url())
   
       await page.waitForSelector(config.spMgmtClass, timeoutOption)
-      logger.info("login success")
+      await page.waitFor(10 * 1000); //wait for 10 seconds
+      logger.info("login success") 
+      
   
       imageName = getImageName("login-success");
       await page.screenshot({ path: path.join(__dirname, imageName) });
@@ -171,19 +175,20 @@ async function run(config: config.Config) {
   
       await browser.close();
       logger.info("browser closed")
-   
+
       await uploadAndCleanImage(config)
+
+      console.timeEnd(config.prodName)
     }
-    catch(error) {
-      notification.sendEmail(error)
-      notification.sendSMS()
+    catch(error) { 
+      notification.sendNotification(config.prodName, error)
     }
     
   })
 }
 
 function uploadAndCleanImage(config: config.Config) {
-  logger.info("ready upload images")
+  logger.info("ready upload images") 
   let files = fs.readdirSync(__dirname);
   let date = moment().utcOffset(8)
   let folder = `paladin/${config.prodName}/${date.format("YYYY")}/${date.format("MM")}/${date.format("DD")}/${date.format("HH")}`;
@@ -214,15 +219,25 @@ function cleanImage() {
 
 // uploadAndCleanImage()
 // cleanImage()
-try {
-  
-  for(let i=0; i< config.configList.length; ++i){
-    run(config.configList[i]);
-  }
-}
-catch(error) {
-  notification.sendEmail(error)
-  notification.sendSMS()
-}
+async function start(){
 
-// setInterval(run, 2 * 60 * 1000) //per 2 minutes
+  for(let i=0; i< config.configList.length; ++i){
+    let config1 = config.configList[i]
+    try {
+      await run(config1);
+    }
+    catch(error) {
+      notification.sendNotification(config1.prodName, error)
+    }
+  }
+  
+}
+// start();
+if(DOCKER_TYPE === "swarm"){
+  setInterval(async ()=> {
+    await start()
+  }, 5 * 60 * 1000) //per 5 minutes
+}
+else {
+  start();
+}
