@@ -18,6 +18,7 @@
     "@types/memjs": "^1.2.0",
     "@types/moment": "^2.13.0",
     "@types/puppeteer": "^1.11.1",
+    "@types/request": "^2.48.1",
     "ali-oss": "^6.0.2",
     "cross-env": "^5.2.0",
     "dotenv": "^6.2.0",
@@ -25,6 +26,7 @@
     "memjs": "^1.2.0",
     "moment": "^2.23.0",
     "puppeteer": "^1.11.0",
+    "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "typescript": "^3.2.2"
   },

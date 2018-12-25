@@ -1,3 +1,4 @@
+import * as config from './prodConfig';
 import * as puppeteer from "puppeteer"
 import * as moment from "moment"
 import * as path from "path"
@@ -6,34 +7,38 @@ import { configure, getLogger } from "log4js";
 import logConfig from "./logConfig";
 import * as fs from "fs";
 import * as OSS from "ali-oss"
+import notification from "./notification";
 
 const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG"
 
 configure(logConfig(LOG_LEVEL))
 
 const logger = getLogger("index")
-
-const mainUri = process.env["PALADIN_MAIN_URI"]
-const username = process.env["PALADIN_USERNAME"]
-const password = process.env["PALADIN_PASSWORD"]
-
-// logger.debug(process.env["HTTP_PROXY"])
-
-logger.debug("main uri is %s", mainUri)
-logger.debug("username is %s", username)
-logger.debug("password is %s", password)
-
 const endpoint = process.env["ALI_SDK_OSS_ENDPOINT"]
 const accessKeySecret = process.env["ALI_SDK_STS_SECRET"]
 const accessKeyId = process.env["ALI_SDK_STS_ID"]
 const bucket = process.env["OSS_DATA_BUCKET"]
-
 const NODE_ENV = process.env["NODE_ENV"]
+const PALADIN_ENV = process.env["PALADIN_ENV"]
 
-logger.debug("oss endpoint is %s", endpoint)
-logger.debug("oss bucket is %s", bucket)
-logger.debug("aliyun accessKeyId is %s", accessKeyId)
-logger.debug("aliyun accessKeySecret is %s", accessKeySecret)
+
+
+let envArgs: Array<string> = ["LOG_LEVEL", "NODE_ENV", "PALADIN_ENV", "ALI_SDK_OSS_ENDPOINT", "OSS_DATA_BUCKET", "ALI_SDK_STS_SECRET", "ALI_SDK_STS_ID"]
+
+envArgs.forEach((item: string) => {
+  let ret = false;
+  let val = process.env[item]
+  if(!val) {
+    logger.fatal("env var %s missing", item)
+    ret = true
+  }
+  else {
+    logger.debug("%s is %s", item, val)
+  }
+  if(ret) {
+    process.exit(1);
+  }
+})
 
 const ossClient = new OSS({
   endpoint,
@@ -63,12 +68,12 @@ function createMemClient() {
 }
 
 function getImageName(key: string) {
-  return `${key}-${moment().toISOString()}.png`
+  return `${key}-${moment().utcOffset(8).toISOString(true)}.png`
 }
 
 const timeoutOption = {timeout: 10 * 1000} // timeout is 10 seconds
  
-async function run() {
+async function run(config: config.Config) {
   const memClient = createMemClient()
   const browser = await puppeteer.launch({
     defaultViewport: {
@@ -81,8 +86,8 @@ async function run() {
   logger.info("browser created")
 
   const page = await createPage(browser)
-  await page.goto(mainUri, timeoutOption)
-  await page.waitForSelector(".login-button", timeoutOption)
+  await page.goto(config.mainUri, timeoutOption)
+  await page.waitForSelector(config.loginButtonClass, timeoutOption)
   logger.info("login button shown")
 
   await page.click('.login-button')
@@ -104,77 +109,84 @@ async function run() {
   logger.debug(`vericode id is ${Id}`)
   
   memClient.get(Id, async (err, val) => {
-    const result = val.toString("utf8");
-    logger.debug("veri code value is", result)
-
-    await page.type("input[placeholder=请输入用户名]", username)
-    await page.type("input[placeholder=请输入密码]", password)
-    await page.type("input[placeholder=请输入图中算式结果]", result)
-
-    let imageName = getImageName("sso-filled-in");
-    await page.screenshot({ path: path.join(__dirname, imageName)}); 
-    logger.info("screenshot finished, name is %s", imageName)
-
+    try {
+      const result = val.toString("utf8");
+      logger.debug("veri code value is", result)
+  
+      await page.type("input[placeholder=请输入用户名]", config.username)
+      await page.type("input[placeholder=请输入密码]", config.password)
+      await page.type("input[placeholder=请输入图中算式结果]", result)
+  
+      let imageName = getImageName("sso-filled-in");
+      await page.screenshot({ path: path.join(__dirname, imageName)}); 
+      logger.info("screenshot finished, name is %s", imageName)
+  
+      
+      let buttons = await page.$$(".pop-login-form-content-button button")
+      await buttons[1].click()
+      response = await page.waitForNavigation(timeoutOption);
+      logger.info("uri change to %s", response.url())
+  
+      response = await page.waitForNavigation(timeoutOption)
+      logger.info("uri change to %s", response.url())
+      
+      response = await page.waitForNavigation(timeoutOption)
+      logger.info("uri change to %s", response.url())
+  
+      await page.waitForSelector(config.spMgmtClass, timeoutOption)
+      logger.info("login success")
+  
+      imageName = getImageName("login-success");
+      await page.screenshot({ path: path.join(__dirname, imageName) });
+      logger.info("screenshot finished, name is %s", imageName)
+  
+      await page.click(config.spMgmtClass) //enter manage
+      logger.info("enter management page success");
+  
+      await page.waitForSelector(config.userClass) //wait for page
+      logger.info("sidebar appear success");
+      
+      await page.click(config.userClass) //click user
+      logger.info("sidebar user clicked");
+  
+      await page.waitForSelector(".sidebar-bottom-action") //wait for sidebar
+      logger.info("logout appear success");
+  
+      await page.click(".sidebar-bottom-action>button") //click logout
+      logger.info("logout clicked");
+  
+      await page.waitForSelector(".dialog-actions") //wait for dialog
+      logger.info("logout double confirmed shown");
+  
+      await page.click(".dialog-actions>button")
+      logger.info("confirm click logout button");
+  
+      await page.waitForSelector(config.loginButtonClass)
+      logger.info("logout success")
+  
+  
+      imageName = getImageName("logout-success")
+      await page.screenshot({ path: path.join(__dirname, imageName) }); 
+      logger.info("screenshot finished, name is %s", imageName)
+  
+      await browser.close();
+      logger.info("browser closed")
+   
+      await uploadAndCleanImage(config)
+    }
+    catch(error) {
+      notification.sendEmail(error)
+      notification.sendSMS()
+    }
     
-    let buttons = await page.$$(".pop-login-form-content-button button")
-    await buttons[1].click()
-    response = await page.waitForNavigation(timeoutOption);
-    logger.info("uri change to %s", response.url())
-
-    response = await page.waitForNavigation(timeoutOption)
-    logger.info("uri change to %s", response.url())
-    
-    response = await page.waitForNavigation(timeoutOption)
-    logger.info("uri change to %s", response.url())
-
-    await page.waitForSelector(".jazz-select-customer-sp-manage", timeoutOption)
-    logger.info("login success")
-
-    imageName = getImageName("login-success");
-    await page.screenshot({ path: path.join(__dirname, imageName) });
-    logger.info("screenshot finished, name is %s", imageName)
-
-    await page.click(".jazz-select-customer-sp-manage") //enter manage
-    logger.info("enter management page success");
-
-    await page.waitForSelector(".jazz-mainmenu-user") //wait for page
-    logger.info("sidebar appear success");
-    
-    await page.click(".jazz-mainmenu-user>a") //click user
-    logger.info("sidebar user clicked");
-
-    await page.waitForSelector(".sidebar-bottom-action") //wait for sidebar
-    logger.info("logout appear success");
-
-    await page.click(".sidebar-bottom-action>button") //click logout
-    logger.info("logout clicked");
-
-    await page.waitForSelector(".dialog-actions") //wait for dialog
-    logger.info("logout double confirmed shown");
-
-    await page.click(".dialog-actions>button")
-    logger.info("confirm click logout button");
-
-    await page.waitForSelector("button.login-button")
-    logger.info("logout success")
-
-
-    imageName = getImageName("logout-success")
-    await page.screenshot({ path: path.join(__dirname, imageName) }); 
-    logger.info("screenshot finished, name is %s", imageName)
-
-    await browser.close();
-    logger.info("browser closed")
-
-    await uploadAndCleanImage()
   })
 }
 
-function uploadAndCleanImage() {
+function uploadAndCleanImage(config: config.Config) {
   logger.info("ready upload images")
   let files = fs.readdirSync(__dirname);
-  let date = moment();
-  let folder = `paladin/${date.format("YYYY")}/${date.format("MM")}/${date.format("DD")}`;
+  let date = moment().utcOffset(8)
+  let folder = `paladin/${config.prodName}/${date.format("YYYY")}/${date.format("MM")}/${date.format("DD")}/${date.format("HH")}`;
   files.forEach(async (item: string) => {
     let fileName = `${folder}/${item}`;
     if(item.endsWith(".png")) {
@@ -202,5 +214,15 @@ function cleanImage() {
 
 // uploadAndCleanImage()
 // cleanImage()
-run();
+try {
+  
+  for(let i=0; i< config.configList.length; ++i){
+    run(config.configList[i]);
+  }
+}
+catch(error) {
+  notification.sendEmail(error)
+  notification.sendSMS()
+}
+
 // setInterval(run, 2 * 60 * 1000) //per 2 minutes
