@@ -1,0 +1,52 @@
+sudo: required
+
+language: node_js
+
+services:
+  - docker
+
+node_js:
+  - "10"
+  
+cache: yarn
+
+env:
+  global:
+  - PROJECT="Paladin"
+  - ROLE="App"
+  - PACKAGE_VERSION="v1.0.${TRAVIS_BUILD_NUMBER}"
+  - DOCKER_NS="se-rem-test"
+
+before_script:
+  - export ARTIFACT_NAME="${PROJECT}-${ROLE}-${TRAVIS_BRANCH}-${PACKAGE_VERSION}.zip"
+  - export TAG=`echo "$PROJECT-$ROLE:$TRAVIS_BRANCH-$PACKAGE_VERSION" | tr '[:upper:]' '[:lower:]'`
+  - export TAG_LATEST=`echo "$PROJECT-$ROLE:$TRAVIS_BRANCH-latest" | tr '[:upper:]' '[:lower:]'`
+  - export REMOTE_TAG=$DOCKER_REGISTRY/$DOCKER_NS/$TAG
+  - export REMOTE_TAG_LATEST=$DOCKER_REGISTRY/$DOCKER_NS/$TAG_LATEST
+
+script:
+  - yarn build
+  - docker build -t $TAG .
+
+before_deploy:
+  - cp compose-template.yml dist/
+  - cp deployment.yaml dist/
+  - cd dist
+  - echo -n "${PACKAGE_VERSION}" > version.txt
+  - zip -r ../${ARTIFACT_NAME} ./
+  - cd ..
+  - 'curl -o upload.sh -H "Authorization: token ${GITHUB_TOKEN}" ${GITHUB_UPLOAD_SCRIPT}'
+  - chmod a+x ./upload.sh
+  - IMAGEID=$(docker images $TAG -q)
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" $DOCKER_REGISTRY
+  - docker tag $IMAGEID $REMOTE_TAG
+  - docker tag $IMAGEID $REMOTE_TAG_LATEST
+  - docker image ls
+  
+deploy:
+  - provider: script
+    skip_cleanup: true
+    on:
+      all_branches: true
+    script:
+      - ./upload.sh ./${ARTIFACT_NAME} ${PROJECT} ${TRAVIS_BRANCH} ${ROLE} ${PACKAGE_VERSION} ${OSS_BUCKET} ${OSS_KEY} ${OSS_SECRET} && docker push $REMOTE_TAG && docker push $REMOTE_TAG_LATEST
