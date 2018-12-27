@@ -24,8 +24,7 @@ RUN apt-get update && apt-get install -y wget --no-install-recommends \
 ADD https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 /usr/local/bin/dumb-init
 RUN chmod +x /usr/local/bin/dumb-init
 
-RUN echo kernel.unprivileged_userns_clone=1 > /etc/sysctl.d/00-local-userns.conf
-RUN sysctl --system
+RUN sysctl -w kernel.unprivileged_userns_clone=1
 
 RUN yarn install
 
