@@ -27,8 +27,8 @@ spec:
           value: INFO
         - name: DOCKER_TYPE
           value: k8s
-        - name: OSS_DATA_BUCKET
-          value: ${OSS_DATA_BUCKET}
+        - name: OSS_BUCKET_DATA
+          value: ${OSS_BUCKET_DATA}
         - name: ALI_SDK_STS_ID
           value: ${COMMON_ALIYUN_ACCESS_ID}
         - name: ALI_SDK_STS_SECRET
