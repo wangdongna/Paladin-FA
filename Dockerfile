@@ -30,7 +30,7 @@ RUN yarn install
 RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
     && mkdir -p /home/pptruser/Downloads \
     && chown -R pptruser:pptruser /home/pptruser \
-    && chown -R pptruser:pptruser /app
+    && chown -R pptruser:pptruser /home/dist
 
 # Run user as non privileged.
 USER pptruser
