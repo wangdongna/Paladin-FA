@@ -36,7 +36,13 @@ RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
 # Run user as non privileged.
 USER pptruser
 
-# RUN sysctl -w kernel.unprivileged_userns_clone=1
+RUN cd /home/dist/node_modules/puppeteer/.local-chromium/linux-609904/chrome-linux/
+RUN chown root:root chrome_sandbox
+RUN chmod 4755 chrome_sandbox
+# copy sandbox executable to a shared location
+RUN cp -p chrome_sandbox /usr/local/sbin/chrome-devel-sandbox
+# export CHROME_DEVEL_SANDBOX env variable
+ENV CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
 
 
 ENTRYPOINT ["dumb-init", "--"]
