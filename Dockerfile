@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:10-slim
 
 WORKDIR /home/dist
 
@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y wget --no-install-recommends \
 ADD https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 /usr/local/bin/dumb-init
 RUN chmod +x /usr/local/bin/dumb-init
 
+
 RUN yarn install
 
 # Add pptr user.
@@ -34,6 +35,9 @@ RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
 
 # Run user as non privileged.
 USER pptruser
+
+# RUN sysctl -w kernel.unprivileged_userns_clone=1
+
 
 ENTRYPOINT ["dumb-init", "--"]
 
