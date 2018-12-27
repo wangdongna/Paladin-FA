@@ -10,7 +10,7 @@
     - ${DNS_SEARCH_DOMAIN_NAME}
   environment:
     - NODE_ENV=production
-    - LOG_LEVEL=${LOG_LEVEL}
+    - LOG_LEVEL=INFO
     - DOCKER_TYPE=swarm
     - OSS_BUCKET_DATA=${OSS_BUCKET_DATA}
     - ALI_SDK_STS_ID=${COMMON_ALIYUN_ACCESS_ID}
