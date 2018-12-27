@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:10-slim
 
 WORKDIR /home/dist
 
@@ -36,7 +36,7 @@ RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
 # Run user as non privileged.
 USER pptruser
 
-RUN sudo sysctl -w kernel.unprivileged_userns_clone=1
+# RUN sysctl -w kernel.unprivileged_userns_clone=1
 
 
 ENTRYPOINT ["dumb-init", "--"]
