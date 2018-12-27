@@ -26,4 +26,15 @@ RUN chmod +x /usr/local/bin/dumb-init
 
 RUN yarn install
 
-ENTRYPOINT ["npm", "run", "start"]
+# Add pptr user.
+RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+    && mkdir -p /home/pptruser/Downloads \
+    && chown -R pptruser:pptruser /home/pptruser \
+    && chown -R pptruser:pptruser /home/dist
+
+# Run user as non privileged.
+USER pptruser
+
+ENTRYPOINT ["dumb-init", "--"]
+
+CMD ["npm", "run", "start"]
