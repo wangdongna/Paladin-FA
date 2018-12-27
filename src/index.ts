@@ -17,13 +17,13 @@ const logger = getLogger("index")
 const endpoint = process.env["HARDCORE_OSS_ENDPOINT"]
 const accessKeySecret = process.env["ALI_SDK_STS_SECRET"]
 const accessKeyId = process.env["ALI_SDK_STS_ID"]
-const bucket = process.env["OSS_DATA_BUCKET"]
+const bucket = process.env["OSS_BUCKET_DATA"]
 const NODE_ENV = process.env["NODE_ENV"]
 const DOCKER_TYPE = process.env["DOCKER_TYPE"]
 
 
 
-let envArgs: Array<string> = ["CLASSIC_OCS_HOST", "CLASSIC_OCS_PORT", "CLASSIC_OCS_USERNAME", "CLASSIC_OCS_PASSWORD", "LOG_LEVEL", "NODE_ENV", "HARDCORE_OSS_ENDPOINT", "OSS_DATA_BUCKET", "ALI_SDK_STS_SECRET", "ALI_SDK_STS_ID"]
+let envArgs: Array<string> = ["CLASSIC_OCS_HOST", "CLASSIC_OCS_PORT", "CLASSIC_OCS_USERNAME", "CLASSIC_OCS_PASSWORD", "LOG_LEVEL", "NODE_ENV", "HARDCORE_OSS_ENDPOINT", "OSS_BUCKET_DATA", "ALI_SDK_STS_SECRET", "ALI_SDK_STS_ID"]
 
 envArgs.forEach((item: string) => {
   let ret = false;
