@@ -33,8 +33,8 @@ spec:
           value: ${COMMON_ALIYUN_ACCESS_ID}
         - name: ALI_SDK_STS_SECRET
           value: ${COMMON_ALIYUN_ACCESS_SECRET}
-        - name: ALI_SDK_OSS_ENDPOINT
-          value: ${ALI_SDK_OSS_ENDPOINT}
+        - name: HARDCORE_OSS_ENDPOINT
+          value: ${HARDCORE_OSS_ENDPOINT}
         - name: PALADIN_EA_MAIN_URI
           value: ${PALADIN_EA_MAIN_URI}
         - name: PALADIN_EA_USERNAME
