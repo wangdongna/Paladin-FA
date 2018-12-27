@@ -1,5 +1,6 @@
 import * as request from "request"
 import { getLogger } from "log4js";
+import * as moment from "moment";
 
 let metalHost = process.env["PALADIN_METAL_HOST"];
 let alertEmail = process.env["PALADIN_ALERT_EMAIL"];
@@ -54,7 +55,7 @@ function sendSMS(prodInfo: string){
     body: JSON.stringify({
         "Type": 1, //短信为1，邮件为2
         "Delay": 0, //延时发送的时间，单位为秒
-        "Payload": `{\"prod\":\"${prodInfo}\", \"time\": \"${new Date().toISOString()}\"}` , //消息负载，下面有详细描述
+        "Payload": `{\"prod\":\"${prodInfo}\", \"time\": \"${moment().utcOffset(8).format("YYYY-MM-DD HH:mm:ss")}\"}` , //消息负载，下面有详细描述
         "To": phones, //发送目标地址，可以为手机号或者Email地址，可以多个
         "IsUsedAliSMS": true, //是否使用阿里云的短信消息通道，目前除了HipHop项目，都已经使用了阿里云的短信通道，如果此字段为false，则使用老旧的空投网作为短信通道，发邮件时此字段非必需
         "Title": "施耐德电气", //消息标题，下面有详细描述
