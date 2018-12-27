@@ -226,7 +226,7 @@ async function start(){
       width: 1920,
       height: 1080
     },
-    args: ['--lang=zh-cn'] 
+    args: ['--lang=zh-cn', '--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox'] 
   });
 
   for(let i=0; i< config.configList.length; ++i){
