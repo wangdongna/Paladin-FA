@@ -44,6 +44,7 @@ RUN cp -p chrome_sandbox /usr/local/sbin/chrome-devel-sandbox
 # export CHROME_DEVEL_SANDBOX env variable
 ENV CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
 
+RUN cd /home/dist/
 
 ENTRYPOINT ["dumb-init", "--"]
 
