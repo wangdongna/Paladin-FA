@@ -14,7 +14,7 @@ const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG"
 configure(logConfig(LOG_LEVEL))
 
 const logger = getLogger("index")
-const endpoint = process.env["ALI_SDK_OSS_ENDPOINT"]
+const endpoint = process.env["HARDCORE_OSS_ENDPOINT"]
 const accessKeySecret = process.env["ALI_SDK_STS_SECRET"]
 const accessKeyId = process.env["ALI_SDK_STS_ID"]
 const bucket = process.env["OSS_DATA_BUCKET"]
@@ -23,7 +23,7 @@ const DOCKER_TYPE = process.env["DOCKER_TYPE"]
 
 
 
-let envArgs: Array<string> = ["CLASSIC_OCS_HOST", "CLASSIC_OCS_PORT", "CLASSIC_OCS_USERNAME", "CLASSIC_OCS_PASSWORD", "LOG_LEVEL", "NODE_ENV", "ALI_SDK_OSS_ENDPOINT", "OSS_DATA_BUCKET", "ALI_SDK_STS_SECRET", "ALI_SDK_STS_ID"]
+let envArgs: Array<string> = ["CLASSIC_OCS_HOST", "CLASSIC_OCS_PORT", "CLASSIC_OCS_USERNAME", "CLASSIC_OCS_PASSWORD", "LOG_LEVEL", "NODE_ENV", "HARDCORE_OSS_ENDPOINT", "OSS_DATA_BUCKET", "ALI_SDK_STS_SECRET", "ALI_SDK_STS_ID"]
 
 envArgs.forEach((item: string) => {
   let ret = false;
