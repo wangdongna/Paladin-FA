@@ -246,6 +246,7 @@ async function start(){
 }
 // start();
 if(DOCKER_TYPE === "swarm"){
+  start()
   setInterval(async ()=> {
     await start()
   }, 5 * 60 * 1000) //per 5 minutes
