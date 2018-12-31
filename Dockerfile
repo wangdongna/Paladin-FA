@@ -28,13 +28,13 @@ RUN chmod +x /usr/local/bin/dumb-init
 RUN yarn install
 
 # Add pptr user.
-RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
-    && mkdir -p /home/pptruser/Downloads \
-    && chown -R pptruser:pptruser /home/pptruser \
-    && chown -R pptruser:pptruser /home/dist
+# RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+#     && mkdir -p /home/pptruser/Downloads \
+#     && chown -R pptruser:pptruser /home/pptruser \
+#     && chown -R pptruser:pptruser /home/dist
 
 # Run user as non privileged.
-USER pptruser
+# USER pptruser
 
 # RUN cd /home/dist/node_modules/puppeteer/.local-chromium/linux-609904/chrome-linux/
 # RUN chown root:root chrome_sandbox
