@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - env:
-        - name : NODE_ENV
+        - name: NODE_ENV
           value: production
         - name: LOG_LEVEL
           value: INFO
@@ -79,7 +79,6 @@ spec:
           value: ${CLASSIC_OCS_USERNAME}
         - name: CLASSIC_OCS_PASSWORD
           value: ${CLASSIC_OCS_PASSWORD}
-
         image: {{ image_name }}
         imagePullPolicy: Always 
         name: {{ project }}-{{ role }}-{{ env_name }}
