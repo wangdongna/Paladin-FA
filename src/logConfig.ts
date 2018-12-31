@@ -4,7 +4,7 @@ let config = {
       "type": "console" ,
       "layout": {
         "type": 'pattern',
-        "pattern": '%[%d [%p] %h %z %c - %]%m',
+        "pattern": '%d [%p] %h %z %c - %m',
       }
     },
     "app": {

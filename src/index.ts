@@ -72,7 +72,7 @@ function getImageName(key: string) {
   return `${key}-${moment().utcOffset(8).toISOString(true)}.png`
 }
 
-const timeoutOption = {timeout: 30 * 1000} // timeout is 10 seconds
+const timeoutOption = {timeout: 50 * 1000} // timeout is 50 seconds
 
 const memClient = createMemClient()
 
