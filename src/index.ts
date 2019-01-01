@@ -50,9 +50,6 @@ const ossClient = new OSS({
 
 
 async function createPage(browser: puppeteer.Browser) {
-
-  cleanImage();
-
   const page = await browser.newPage();
   page.setCacheEnabled(false)
   page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36 Paladin")
@@ -79,11 +76,8 @@ const timeoutOption = {timeout: parseInt(TIMEOUT) * 1000} // timeout is 60 secon
 const memClient = createMemClient()
 
  
-async function run(browser: puppeteer.Browser, config: config.Config) {
+async function run(page: puppeteer.Page, config: config.Config) {
   console.time(config.prodName)
-
-  const page = await createPage(browser)
-  logger.info("page created for: %s", config.prodName)
 
   let response = await page.goto(config.mainUri, timeoutOption)
   logger.info("enter page: %s", response.url())
@@ -92,16 +86,10 @@ async function run(browser: puppeteer.Browser, config: config.Config) {
   logger.info("login button shown")
 
   await page.click(config.loginButtonClass)
-  response = await page.waitForNavigation(timeoutOption); 
-  logger.info("go to uri is %s", response.url())
-  try {
-    response = await page.waitForNavigation(timeoutOption);  
-  } catch (error) {
-    await page.screenshot({ path: path.join(__dirname, "go-to-sso-page-error.png")});
-    await uploadAndCleanImage(config)
-    return 
-  }
   
+  response = await page.waitForNavigation(timeoutOption); 
+
+  response = await page.waitForNavigation(timeoutOption);  
 
   const veriCodeRes = await page.waitForResponse(
     response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200, timeoutOption);
@@ -177,11 +165,7 @@ async function run(browser: puppeteer.Browser, config: config.Config) {
         imageName = getImageName("logout-success")
         await page.screenshot({ path: path.join(__dirname, imageName) }); 
         logger.info("screenshot finished, name is %s", imageName)
-    
- 
-  
-        await uploadAndCleanImage(config)
-  
+
         console.timeEnd(config.prodName)
 
         resolve()
@@ -197,19 +181,20 @@ async function run(browser: puppeteer.Browser, config: config.Config) {
   
 }
 
-function uploadAndCleanImage(config: config.Config) {
+async function upload(config: config.Config) {
   logger.info("ready upload images") 
   let files = fs.readdirSync(__dirname);
   let date = moment().utcOffset(8)
   let folder = `paladin/${config.prodName}/${date.format("YYYY")}/${date.format("MM")}/${date.format("DD")}/${date.format("HH")}`;
-  files.forEach(async (item: string) => {
+  for(let i=0;i< files.length; ++i) {
+    let item = files[i];
     let fileName = `${folder}/${item}`;
     if(item.endsWith(".png")) {
       logger.debug("ready put item: ", fileName)
       let ret = await ossClient.put(fileName, path.join(__dirname, item))
       logger.info("file %s is uploaded", ret.name)
     }
-  })
+  }
 }
 
 function cleanImage() {
@@ -219,8 +204,12 @@ function cleanImage() {
     let fileName = item;
     if(item.endsWith(".png")) {
       logger.debug("ready delete item: ", fileName)
-      fs.unlinkSync(path.join(__dirname, fileName));
-      logger.info("file %s is deleted", fileName)
+      let filePath = path.join(__dirname, fileName) 
+      if(fs.existsSync(filePath)){
+        fs.unlinkSync(filePath);
+        logger.info("file %s is deleted", fileName)
+      }
+      
     }
   })
 }
@@ -239,12 +228,21 @@ async function start(){
 
   for(let i=0; i< config.configList.length; ++i){
     let config1 = config.configList[i]
+    const page = await createPage(browser)
+    logger.info("page created for: %s", config1.prodName)
     try {
-      await run(browser, config1);
+      await run(page, config1);
+      await page.close()
     }
     catch(error) {
       logger.error(error)
+      await page.screenshot({ path: path.join(__dirname, "error.png")});
+      await page.close()
       notification.sendNotification(config1.prodName, error)
+    }
+    finally {
+      await upload(config1)
+      cleanImage()
     }
   }
 
