@@ -94,8 +94,14 @@ async function run(browser: puppeteer.Browser, config: config.Config) {
   await page.click(config.loginButtonClass)
   response = await page.waitForNavigation(timeoutOption); 
   logger.info("go to uri is %s", response.url())
-
-  response = await page.waitForNavigation(timeoutOption);
+  try {
+    response = await page.waitForNavigation(timeoutOption);  
+  } catch (error) {
+    await page.screenshot({ path: path.join(__dirname, "go-to-sso-page-error.png")});
+    await uploadAndCleanImage(config)
+    return 
+  }
+  
 
   const veriCodeRes = await page.waitForResponse(
     response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200, timeoutOption);
