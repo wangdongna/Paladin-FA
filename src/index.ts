@@ -66,12 +66,15 @@ function createMemClient() {
 }
 
 function getImageName(key: string) {
-  return `${key}-${moment().utcOffset(8).toISOString(true)}.png`
+  return `${key}-${moment().utcOffset(8).format("YYYY-MM-DD HH:mm:DD")}.png`
 }
 
 const TIMEOUT = process.env["TIMEOUT"] || "60";
 
 const timeoutOption = {timeout: parseInt(TIMEOUT) * 1000} // timeout is 60 seconds
+
+const navigationOption = Object.assign({}, timeoutOption, {waitUntil: ["domcontentloaded"]})
+const navigationIdleOption = Object.assign({}, timeoutOption, {waitUntil: ["networkidle0"]})
 
 const memClient = createMemClient()
 
@@ -85,11 +88,19 @@ async function run(page: puppeteer.Page, config: config.Config) {
   await page.waitForSelector(config.loginButtonClass, timeoutOption)
   logger.info("login button shown")
 
-  await page.click(config.loginButtonClass)
+  let responses = await Promise.all([
+    await page.click(config.loginButtonClass),
+    await page.waitForNavigation(navigationOption),
+    await page.waitForNavigation(navigationOption)
+  ])
+  logger.info("entering sso page")
   
-  response = await page.waitForNavigation(timeoutOption); 
-
-  response = await page.waitForNavigation(timeoutOption);  
+  responses.forEach((item: any) => {
+    if(item && item.url) {
+      logger.info("url change to %s", item.url());
+    }
+  })
+  
 
   const veriCodeRes = await page.waitForResponse(
     response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200, timeoutOption);
@@ -118,15 +129,19 @@ async function run(page: puppeteer.Page, config: config.Config) {
     
         
         let buttons = await page.$$(".pop-login-form-content-button button")
-        await buttons[1].click()
-        response = await page.waitForNavigation(timeoutOption);
-        logger.info("uri change to %s", response.url())
-    
-        response = await page.waitForNavigation(timeoutOption)
-        logger.info("uri change to %s", response.url())
+        let responses = await Promise.all([
+          await buttons[1].click(),
+          await page.waitForNavigation(navigationOption),
+          await page.waitForNavigation(navigationOption),
+          await page.waitForNavigation(navigationOption),
+        ])
+        logger.info("customer selection shown")
+        responses.forEach((item: any) => {
+          if(item && item.url){
+            logger.info("uri change to %s", item.url())
+          }
+        })
         
-        response = await page.waitForNavigation(timeoutOption)
-        logger.info("uri change to %s", response.url())
     
         await page.waitForSelector(config.spMgmtClass, timeoutOption)
         await page.waitFor(10 * 1000); //wait for 10 seconds
@@ -158,7 +173,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
         await page.click(".dialog-actions>button")
         logger.info("confirm click logout button");
     
-        await page.waitForSelector(config.loginButtonClass)
+        await page.waitForSelector(config.loginButtonClass, timeoutOption)
         logger.info("logout success")
     
     
@@ -172,7 +187,6 @@ async function run(page: puppeteer.Page, config: config.Config) {
       }
       catch(error) { 
         logger.error(error)
-        notification.sendNotification(config.prodName, error)
         reject(error)
       }
     })
@@ -233,12 +247,14 @@ async function start(){
     try {
       await run(page, config1);
       await page.close()
+      notification.success(config1.prodName)
     }
     catch(error) {
       logger.error(error)
-      await page.screenshot({ path: path.join(__dirname, "error.png")});
+      let errorFileName = getImageName("error")
+      await page.screenshot({ path: path.join(__dirname, errorFileName)});
       await page.close()
-      notification.sendNotification(config1.prodName, error)
+      notification.error(config1.prodName, error)
     }
     finally {
       await upload(config1)
