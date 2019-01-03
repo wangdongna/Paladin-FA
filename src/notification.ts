@@ -76,12 +76,31 @@ function decCounter() {
   }
 }
 
-export default {
-  sendNotification(prodInfo: string, error: string){
-    if(counter > 5){
-      sendEmail(`${prodInfo}登录异常`, error)
-      sendSMS(prodInfo)
-    }
-    decCounter()
+function sendNotification(prodInfo: string, error: string) {
+  if(counter > 5){
+    sendEmail(`${prodInfo}登录异常`, error)
+    sendSMS(prodInfo)
   }
+  decCounter()
+}
+
+let errMap: {[key: string]: number} = {}
+
+export default {
+  error(prodInfo: string, error: string) {
+    let counter = errMap[prodInfo];
+    if(counter) {
+      counter++;
+      if(counter >= 2){
+        sendNotification(prodInfo, error)
+      }
+    }
+    else{
+      errMap[prodInfo] = 1
+    }
+  },
+  success(prodInfo: string) {
+    errMap[prodInfo] = 0
+  }
+  
 }

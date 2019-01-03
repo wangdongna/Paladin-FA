@@ -50,9 +50,6 @@ const ossClient = new OSS({
 
 
 async function createPage(browser: puppeteer.Browser) {
-
-  cleanImage();
-
   const page = await browser.newPage();
   page.setCacheEnabled(false)
   page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36 Paladin")
@@ -69,21 +66,21 @@ function createMemClient() {
 }
 
 function getImageName(key: string) {
-  return `${key}-${moment().utcOffset(8).toISOString(true)}.png`
+  return `${key}-${moment().utcOffset(8).format("YYYY-MM-DD HH:mm:DD")}.png`
 }
 
 const TIMEOUT = process.env["TIMEOUT"] || "60";
 
 const timeoutOption = {timeout: parseInt(TIMEOUT) * 1000} // timeout is 60 seconds
 
+const navigationOption = Object.assign({}, timeoutOption, {waitUntil: ["domcontentloaded"]})
+const navigationIdleOption = Object.assign({}, timeoutOption, {waitUntil: ["networkidle0"]})
+
 const memClient = createMemClient()
 
  
-async function run(browser: puppeteer.Browser, config: config.Config) {
+async function run(page: puppeteer.Page, config: config.Config) {
   console.time(config.prodName)
-
-  const page = await createPage(browser)
-  logger.info("page created for: %s", config.prodName)
 
   let response = await page.goto(config.mainUri, timeoutOption)
   logger.info("enter page: %s", response.url())
@@ -91,16 +88,18 @@ async function run(browser: puppeteer.Browser, config: config.Config) {
   await page.waitForSelector(config.loginButtonClass, timeoutOption)
   logger.info("login button shown")
 
-  await page.click(config.loginButtonClass)
-  response = await page.waitForNavigation(timeoutOption); 
-  logger.info("go to uri is %s", response.url())
-  try {
-    response = await page.waitForNavigation(timeoutOption);  
-  } catch (error) {
-    await page.screenshot({ path: path.join(__dirname, "go-to-sso-page-error.png")});
-    await uploadAndCleanImage(config)
-    return 
-  }
+  let responses = await Promise.all([
+    await page.click(config.loginButtonClass),
+    await page.waitForNavigation(navigationOption),
+    await page.waitForNavigation(navigationOption)
+  ])
+  logger.info("entering sso page")
+  
+  responses.forEach((item: any) => {
+    if(item && item.url) {
+      logger.info("url change to %s", item.url());
+    }
+  })
   
 
   const veriCodeRes = await page.waitForResponse(
@@ -130,15 +129,19 @@ async function run(browser: puppeteer.Browser, config: config.Config) {
     
         
         let buttons = await page.$$(".pop-login-form-content-button button")
-        await buttons[1].click()
-        response = await page.waitForNavigation(timeoutOption);
-        logger.info("uri change to %s", response.url())
-    
-        response = await page.waitForNavigation(timeoutOption)
-        logger.info("uri change to %s", response.url())
+        let responses = await Promise.all([
+          await buttons[1].click(),
+          await page.waitForNavigation(navigationOption),
+          await page.waitForNavigation(navigationOption),
+          await page.waitForNavigation(navigationOption),
+        ])
+        logger.info("customer selection shown")
+        responses.forEach((item: any) => {
+          if(item && item.url){
+            logger.info("uri change to %s", item.url())
+          }
+        })
         
-        response = await page.waitForNavigation(timeoutOption)
-        logger.info("uri change to %s", response.url())
     
         await page.waitForSelector(config.spMgmtClass, timeoutOption)
         await page.waitFor(10 * 1000); //wait for 10 seconds
@@ -170,25 +173,20 @@ async function run(browser: puppeteer.Browser, config: config.Config) {
         await page.click(".dialog-actions>button")
         logger.info("confirm click logout button");
     
-        await page.waitForSelector(config.loginButtonClass)
+        await page.waitForSelector(config.loginButtonClass, timeoutOption)
         logger.info("logout success")
     
     
         imageName = getImageName("logout-success")
         await page.screenshot({ path: path.join(__dirname, imageName) }); 
         logger.info("screenshot finished, name is %s", imageName)
-    
- 
-  
-        await uploadAndCleanImage(config)
-  
+
         console.timeEnd(config.prodName)
 
         resolve()
       }
       catch(error) { 
         logger.error(error)
-        notification.sendNotification(config.prodName, error)
         reject(error)
       }
     })
@@ -197,19 +195,20 @@ async function run(browser: puppeteer.Browser, config: config.Config) {
   
 }
 
-function uploadAndCleanImage(config: config.Config) {
+async function upload(config: config.Config) {
   logger.info("ready upload images") 
   let files = fs.readdirSync(__dirname);
   let date = moment().utcOffset(8)
   let folder = `paladin/${config.prodName}/${date.format("YYYY")}/${date.format("MM")}/${date.format("DD")}/${date.format("HH")}`;
-  files.forEach(async (item: string) => {
+  for(let i=0;i< files.length; ++i) {
+    let item = files[i];
     let fileName = `${folder}/${item}`;
     if(item.endsWith(".png")) {
       logger.debug("ready put item: ", fileName)
       let ret = await ossClient.put(fileName, path.join(__dirname, item))
       logger.info("file %s is uploaded", ret.name)
     }
-  })
+  }
 }
 
 function cleanImage() {
@@ -219,8 +218,12 @@ function cleanImage() {
     let fileName = item;
     if(item.endsWith(".png")) {
       logger.debug("ready delete item: ", fileName)
-      fs.unlinkSync(path.join(__dirname, fileName));
-      logger.info("file %s is deleted", fileName)
+      let filePath = path.join(__dirname, fileName) 
+      if(fs.existsSync(filePath)){
+        fs.unlinkSync(filePath);
+        logger.info("file %s is deleted", fileName)
+      }
+      
     }
   })
 }
@@ -239,12 +242,23 @@ async function start(){
 
   for(let i=0; i< config.configList.length; ++i){
     let config1 = config.configList[i]
+    const page = await createPage(browser)
+    logger.info("page created for: %s", config1.prodName)
     try {
-      await run(browser, config1);
+      await run(page, config1);
+      await page.close()
+      notification.success(config1.prodName)
     }
     catch(error) {
       logger.error(error)
-      notification.sendNotification(config1.prodName, error)
+      let errorFileName = getImageName("error")
+      await page.screenshot({ path: path.join(__dirname, errorFileName)});
+      await page.close()
+      notification.error(config1.prodName, error)
+    }
+    finally {
+      await upload(config1)
+      cleanImage()
     }
   }
 
