@@ -85,13 +85,22 @@ async function run(page: puppeteer.Page, config: config.Config) {
   let response = await page.goto(config.mainUri, timeoutOption)
   logger.info("enter page: %s", response.url())
 
-  await page.waitForSelector(config.loginButtonClass, timeoutOption)
-  logger.info("login button shown")
+  let loginButton = await page.waitForSelector(config.loginButtonClass, timeoutOption)
+  if(loginButton) {
+    logger.info("login button shown")
+    let imageName = getImageName("mainpage");
+    await page.screenshot({ path: path.join(__dirname, imageName)});
+  }
+  else {
+    logger.info("login button not shown, url is: %s", page.url())
+    throw new Error("unknow error")
+  }
+  
 
   let responses = await Promise.all([
     await page.click(config.loginButtonClass),
     await page.waitForNavigation(navigationOption),
-    await page.waitForNavigation(navigationOption)
+    // await page.waitForNavigation(navigationOption)
   ])
   logger.info("entering sso page")
   
@@ -152,34 +161,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
         await page.screenshot({ path: path.join(__dirname, imageName) });
         logger.info("screenshot finished, name is %s", imageName)
     
-        await page.click(config.spMgmtClass) //enter manage
-        logger.info("enter management page success");
-    
-        await page.waitForSelector(config.userClass) //wait for page
-        logger.info("sidebar appear success");
-        
-        await page.click(config.userClass) //click user
-        logger.info("sidebar user clicked");
-    
-        await page.waitForSelector(".sidebar-bottom-action") //wait for sidebar
-        logger.info("logout appear success");
-    
-        await page.click(".sidebar-bottom-action>button") //click logout
-        logger.info("logout clicked");
-    
-        await page.waitForSelector(".dialog-actions") //wait for dialog
-        logger.info("logout double confirmed shown");
-    
-        await page.click(".dialog-actions>button")
-        logger.info("confirm click logout button");
-    
-        await page.waitForSelector(config.loginButtonClass, timeoutOption)
-        logger.info("logout success")
-    
-    
-        imageName = getImageName("logout-success")
-        await page.screenshot({ path: path.join(__dirname, imageName) }); 
-        logger.info("screenshot finished, name is %s", imageName)
+        await logoutProcess(page, config)
 
         console.timeEnd(config.prodName)
 
@@ -193,6 +175,38 @@ async function run(page: puppeteer.Page, config: config.Config) {
   })
   
   
+}
+
+async function logoutProcess(page: puppeteer.Page, config: config.Config) {
+  await page.click(config.spMgmtClass) //enter manage
+  logger.info("enter management page success");
+
+  await page.waitForSelector(config.userClass) //wait for page
+  logger.info("sidebar appear success");
+  
+  await page.click(config.userClass) //click user
+  logger.info("sidebar user clicked");
+
+  await page.waitForSelector(".sidebar-bottom-action") //wait for sidebar
+  logger.info("logout appear success");
+
+  await page.click(".sidebar-bottom-action>button") //click logout
+  logger.info("logout clicked");
+
+  await page.waitForSelector(".dialog-actions") //wait for dialog
+  logger.info("logout double confirmed shown");
+
+  await page.click(".dialog-actions>button")
+  logger.info("confirm click logout button");
+
+  await page.waitForSelector(config.loginButtonClass, timeoutOption)
+  logger.info("logout success")
+
+
+  let imageName = getImageName("logout-success")
+  await page.screenshot({ path: path.join(__dirname, imageName) }); 
+  logger.info("screenshot finished, name is %s", imageName)
+
 }
 
 async function upload(config: config.Config) {
@@ -267,7 +281,7 @@ async function start(){
   
 }
 // start();
-if(DOCKER_TYPE === "swarm"){
+if(DOCKER_TYPE === "swarm" || DOCKER_TYPE === "k8s"){
   start()
   setInterval(async ()=> {
     await start()
