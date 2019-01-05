@@ -263,6 +263,7 @@ async function start(){
     }
     catch(error) {
       logger.error(error)
+      logger.error(page.url())
       let errorFileName = getImageName("error")
       await page.screenshot({ path: path.join(__dirname, errorFileName)});
       await page.close()
