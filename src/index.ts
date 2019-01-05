@@ -82,7 +82,15 @@ async function run(page: puppeteer.Page, config: config.Config) {
   console.time(config.prodName)
 
   let response = await page.goto(config.mainUri, timeoutOption)
-  logger.info("enter page: %s", response.url())
+  if(response) {
+    logger.info("enter page: %s", response.url())
+  }
+  else {
+    logger.error("fail to enter page: %s", config.mainUri)
+    //skip this case 
+    return
+  }
+  
 
   let loginButton = await page.waitForSelector(config.loginButtonClass, timeoutOption)
   if(loginButton) {
