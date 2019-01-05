@@ -51,9 +51,8 @@ const ossClient = new OSS({
 
 async function createPage(browser: puppeteer.Browser) {
   const page = await browser.newPage();
-  page.setCacheEnabled(false)
+  // page.setCacheEnabled(false)
   page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36 Paladin")
-  logger.info("page created")
   return page;
 }
 
@@ -245,16 +244,15 @@ function cleanImage() {
 // uploadAndCleanImage()
 // cleanImage()
 async function start(){
-
-  const browser = await puppeteer.launch({
-    defaultViewport: {
-      width: 1920,
-      height: 1080
-    },
-    args: ['--lang=zh-cn', '--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox'] 
-  });
-
   for(let i=0; i< config.configList.length; ++i){
+    const browser = await puppeteer.launch({
+      defaultViewport: {
+        width: 1920,
+        height: 1080
+      },
+      args: ['--lang=zh-cn', '--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox'] 
+    });
+
     let config1 = config.configList[i]
     const page = await createPage(browser)
     logger.info("page created for: %s", config1.prodName)
@@ -273,12 +271,10 @@ async function start(){
     finally {
       await upload(config1)
       cleanImage()
+      await browser.close();
+      logger.info("browser closed")
     }
   }
-
-  await browser.close();
-  logger.info("browser closed")
-  
 }
 // start();
 if(DOCKER_TYPE === "swarm" || DOCKER_TYPE === "k8s"){
