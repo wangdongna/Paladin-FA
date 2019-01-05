@@ -142,7 +142,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
           await buttons[1].click(),
           await page.waitForNavigation(navigationOption),
           await page.waitForNavigation(navigationOption),
-          await page.waitForNavigation(navigationOption),
+          await page.waitForNavigation(navigationIdleOption),
         ])
         logger.info("customer selection shown")
         responses.forEach((item: any) => {
