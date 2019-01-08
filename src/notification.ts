@@ -71,7 +71,7 @@ function sendSMS(prodInfo: string){
 
 function decCounter() {
   counter--;
-  if(counter <= 5) {
+  if(counter <= 5 && counter > 0) {
     sendEmail(`Counter`, "counter is less than 5, need restart container")
   }
 }
