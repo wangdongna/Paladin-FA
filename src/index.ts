@@ -21,6 +21,7 @@ const bucket = process.env["OSS_BUCKET_DATA"]
 const NODE_ENV = process.env["NODE_ENV"]
 const DOCKER_TYPE = process.env["DOCKER_TYPE"]
 
+const TIMEOUT = process.env["TIMEOUT"] || "60";
 
 
 let envArgs: Array<string> = ["CLASSIC_OCS_HOST", "CLASSIC_OCS_PORT", "CLASSIC_OCS_USERNAME", "CLASSIC_OCS_PASSWORD", "LOG_LEVEL", "NODE_ENV", "HARDCORE_OSS_ENDPOINT", "OSS_BUCKET_DATA", "ALI_SDK_STS_SECRET", "ALI_SDK_STS_ID"]
@@ -53,6 +54,17 @@ async function createPage(browser: puppeteer.Browser) {
   const page = await browser.newPage();
   // page.setCacheEnabled(false)
   page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36 Paladin")
+  page.setDefaultNavigationTimeout(parseInt(TIMEOUT) * 1000)
+  page.on("requestfailed", (request) => {
+    logger.error("requestfailed: %s", request.url())
+  })
+  page.on("response", (response) => {
+    if(!response.ok() && response.status() >= 400){
+      logger.error("response maybe error: %s, %s", response.status(), response.url())
+    }
+    
+  })
+
   return page;
 }
 
@@ -68,7 +80,6 @@ function getImageName(key: string) {
   return `${key}-${moment().utcOffset(8).format("YYYY-MM-DD HH:mm:DD")}.png`
 }
 
-const TIMEOUT = process.env["TIMEOUT"] || "60";
 
 const timeoutOption = {timeout: parseInt(TIMEOUT) * 1000} // timeout is 60 seconds
 
