@@ -15,13 +15,13 @@ configure(logConfig(LOG_LEVEL))
 
 const logger = getLogger("index")
 const endpoint = process.env["HARDCORE_OSS_ENDPOINT"]
-const accessKeySecret = process.env["ALI_SDK_STS_SECRET"]
-const accessKeyId = process.env["ALI_SDK_STS_ID"]
+const accessKeySecret = process.env["COMMON_ALIYUN_ACCESS_SECRET"]
+const accessKeyId = process.env["COMMON_ALIYUN_ACCESS_ID"]
 const bucket = process.env["OSS_BUCKET_DATA"]
 const NODE_ENV = process.env["NODE_ENV"]
 const DOCKER_TYPE = process.env["DOCKER_TYPE"]
 
-const TIMEOUT = process.env["TIMEOUT"] || "60";
+const TIMEOUT = process.env["TIMEOUT"] || "30";
 
 
 let envArgs: Array<string> = ["CLASSIC_OCS_HOST", "CLASSIC_OCS_PORT", "CLASSIC_OCS_USERNAME", "CLASSIC_OCS_PASSWORD", "LOG_LEVEL", "NODE_ENV", "HARDCORE_OSS_ENDPOINT", "OSS_BUCKET_DATA", "ALI_SDK_STS_SECRET", "ALI_SDK_STS_ID"]
