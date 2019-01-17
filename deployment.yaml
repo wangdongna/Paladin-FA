@@ -29,9 +29,9 @@ spec:
           value: "k8s"
         - name: OSS_BUCKET_DATA
           value: "${OSS_BUCKET_DATA}"
-        - name: ALI_SDK_STS_ID
+        - name: COMMON_ALIYUN_ACCESS_ID
           value: "${COMMON_ALIYUN_ACCESS_ID}"
-        - name: ALI_SDK_STS_SECRET
+        - name: COMMON_ALIYUN_ACCESS_SECRET
           value: "${COMMON_ALIYUN_ACCESS_SECRET}"
         - name: HARDCORE_OSS_ENDPOINT
           value: "${HARDCORE_OSS_ENDPOINT}"
