@@ -18,7 +18,7 @@ let emails = alertEmail.split(",");
 let phones = alertPhone.split(",");
 let counter = 50
 
-function sendEmail(title: string, error: string){
+function sendEmail(title: string, error: string, delay: number){
   request({
     uri: metalHost + "/api/message/send",
     method: "POST",
@@ -28,7 +28,7 @@ function sendEmail(title: string, error: string){
     },
     body: JSON.stringify({
         "Type": 2, //短信为1，邮件为2
-        "Delay": 0, //延时发送的时间，单位为秒
+        "Delay": delay, //延时发送的时间，单位为秒
         "Payload": `${error}` , //消息负载，下面有详细描述
         "To": emails, //发送目标地址，可以为手机号或者Email地址，可以多个
         "IsUsedAliSMS": true, //是否使用阿里云的短信消息通道，目前除了HipHop项目，都已经使用了阿里云的短信通道，如果此字段为false，则使用老旧的空投网作为短信通道，发邮件时此字段非必需
@@ -44,7 +44,8 @@ function sendEmail(title: string, error: string){
   })
 }
 
-function sendSMS(prodInfo: string){
+function sendSMS(prodInfo: string, info: string, delay: number){
+  let time = moment().utcOffset(8).format("YYYY-MM-DD HH:mm:ss")
   request({
     uri: metalHost + "/api/message/send",
     method: "POST",
@@ -54,12 +55,12 @@ function sendSMS(prodInfo: string){
     },
     body: JSON.stringify({
         "Type": 1, //短信为1，邮件为2
-        "Delay": 0, //延时发送的时间，单位为秒
-        "Payload": `{\"prod\":\"${prodInfo}\", \"time\": \"${moment().utcOffset(8).format("YYYY-MM-DD HH:mm:ss")}\"}` , //消息负载，下面有详细描述
+        "Delay": delay, //延时发送的时间，单位为秒
+        "Payload": `{\"prod\":\"${prodInfo}\", \"time\": \"${time}\", \"info\": \"${info}\"}` , //消息负载，下面有详细描述
         "To": phones, //发送目标地址，可以为手机号或者Email地址，可以多个
-        "IsUsedAliSMS": true, //是否使用阿里云的短信消息通道，目前除了HipHop项目，都已经使用了阿里云的短信通道，如果此字段为false，则使用老旧的空投网作为短信通道，发邮件时此字段非必需
+        "IsUsedAliSMS": true, //是否使用阿里云的短信消息通道，发邮件时此字段非必需
         "Title": "施耐德电气", //消息标题，下面有详细描述
-        "TemplateNo": "SMS_153332885" //短信模板，发邮件时此字段非必需
+        "TemplateNo": "SMS_155862469" //短信模板，发邮件时此字段非必需
     })
   }, (err, response, body) => {
     if(err) {
@@ -72,27 +73,33 @@ function sendSMS(prodInfo: string){
 function decCounter() {
   counter--;
   if(counter <= 5 && counter > 0) {
-    sendEmail(`Counter`, "counter is less than 5, need restart container")
+    sendEmail(`Paladin 阈值`, "Paladin 阈值 is less than 5, need restart container", 0)
   }
 }
 
-function sendNotification(prodInfo: string, error: string) {
+function sendNotification(prodInfo: string, error: string, delay: number) {
   if(counter > 5){
-    sendEmail(`${prodInfo}登录异常`, error)
-    sendSMS(prodInfo)
+    sendEmail(`${prodInfo}登录异常`, error, delay)
+    sendSMS(prodInfo, error, delay)
   }
   decCounter()
 }
 
 let errMap: {[key: string]: number} = {}
 
+const ERROR_MSG = "登录异常"
+const RECOVER_MSG = "登录恢复"
+
 export default {
   error(prodInfo: string, error: string) {
     let counter = errMap[prodInfo];
     if(counter) {
       counter++;
-      if(counter >= 2){
-        sendNotification(prodInfo, error)
+      if(counter == 2 || counter == 4){
+        sendNotification(prodInfo, ERROR_MSG, 0)
+      }
+      else if(counter > 4) {
+        sendNotification(prodInfo, ERROR_MSG, 60*60)
       }
     }
     else{
@@ -100,6 +107,9 @@ export default {
     }
   },
   success(prodInfo: string) {
+    if(errMap[prodInfo]){
+      sendNotification(prodInfo, RECOVER_MSG, 0)
+    }
     errMap[prodInfo] = 0
   }
   
