@@ -55,11 +55,11 @@ async function createPage(browser: puppeteer.Browser) {
   page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36 Paladin")
   page.setDefaultNavigationTimeout(parseInt(TIMEOUT) * 1000)
   page.on("requestfailed", (request) => {
-    logger.error("requestfailed: %s", request.url())
+    logger.debug("requestfailed: %s", request.url())
   })
   page.on("response", (response) => {
     if(!response.ok() && response.status() >= 400){
-      logger.error("response maybe error: %s, %s", response.status(), response.url())
+      logger.debug("response maybe error: %s, %s", response.status(), response.url())
     }
     
   })
@@ -294,6 +294,7 @@ async function start(){
       logger.info("browser closed")
     }
   }
+  process.exit(0)
 }
 
 start();
