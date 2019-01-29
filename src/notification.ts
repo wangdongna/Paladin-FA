@@ -56,11 +56,11 @@ function sendSMS(prodInfo: string, info: string, delay: number){
     body: JSON.stringify({
         "Type": 1, //短信为1，邮件为2
         "Delay": delay, //延时发送的时间，单位为秒
-        "Payload": `{\"prod\":\"${prodInfo}\", \"time\": \"${time}\", \"info\": \"${info}\"}` , //消息负载，下面有详细描述
+        "Payload": `{\"prod\":\"${prodInfo}\", \"time\": \"${time}\", \"status\": \"${info}\"}` , //消息负载，下面有详细描述
         "To": phones, //发送目标地址，可以为手机号或者Email地址，可以多个
         "IsUsedAliSMS": true, //是否使用阿里云的短信消息通道，发邮件时此字段非必需
         "Title": "施耐德电气", //消息标题，下面有详细描述
-        "TemplateNo": "SMS_155862469" //短信模板，发邮件时此字段非必需
+        "TemplateNo": "SMS_157284444" //产品信息:${prod}，状态是:${status}，发生时间:${time}，请知悉
     })
   }, (err, response, body) => {
     if(err) {
