@@ -29,7 +29,6 @@ script:
   - docker build -t $TAG .
 
 before_deploy:
-  - cp compose-template.yml dist/
   - cp deployment.yaml dist/
   - cd dist
   - echo -n "${PACKAGE_VERSION}" > version.txt
