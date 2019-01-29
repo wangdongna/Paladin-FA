@@ -1,97 +1,86 @@
-apiVersion: extensions/v1beta1 
-kind: Deployment 
+apiVersion: batch/v1beta1
+kind: CronJob 
 metadata: 
   name: {{ project }}-{{ role }}-{{ env_name }}
   labels:
     app: {{ project }}-{{ role }}-{{ env_name }}
 spec: 
-  replicas: 1
-  selector: 
-    matchLabels: 
-      app: {{ project }}-{{ role }}-{{ env_name }}
-  strategy: 
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-    type: RollingUpdate 
-  template: 
-    metadata: 
-      labels: 
-        app: {{ project }}-{{ role }}-{{ env_name }}
-    spec:
-      containers:
-      - env:
-        - name: NODE_ENV
-          value: "production"
-        - name: LOG_LEVEL
-          value: "INFO"
-        - name: DOCKER_TYPE
-          value: "k8s"
-        - name: OSS_BUCKET_DATA
-          value: "${OSS_BUCKET_DATA}"
-        - name: COMMON_ALIYUN_ACCESS_ID
-          value: "${COMMON_ALIYUN_ACCESS_ID}"
-        - name: COMMON_ALIYUN_ACCESS_SECRET
-          value: "${COMMON_ALIYUN_ACCESS_SECRET}"
-        - name: HARDCORE_OSS_ENDPOINT
-          value: "${HARDCORE_OSS_ENDPOINT}"
-        - name: PALADIN_EA_MAIN_URI
-          value: "${PALADIN_EA_MAIN_URI}"
-        - name: PALADIN_EA_USERNAME
-          value: "${PALADIN_EA_USERNAME}"
-        - name: PALADIN_EA_PASSWORD
-          value: "${PALADIN_EA_PASSWORD}"
-        - name: PALADIN_FA_MAIN_URI
-          value: "${PALADIN_FA_MAIN_URI}"
-        - name: PALADIN_FA_USERNAME
-          value: "${PALADIN_FA_USERNAME}"
-        - name: PALADIN_FA_PASSWORD
-          value: "${PALADIN_FA_PASSWORD}"
-        - name: PALADIN_MA_MAIN_URI
-          value: "${PALADIN_MA_MAIN_URI}"
-        - name: PALADIN_MA_USERNAME
-          value: "${PALADIN_MA_USERNAME}"
-        - name: PALADIN_MA_PASSWORD
-          value: "${PALADIN_MA_PASSWORD}"
-        - name: PALADIN_DA_MAIN_URI
-          value: "${PALADIN_DA_MAIN_URI}"
-        - name: PALADIN_DA_USERNAME
-          value: "${PALADIN_DA_USERNAME}"
-        - name: PALADIN_DA_PASSWORD
-          value: "${PALADIN_DA_PASSWORD}"
-        - name: PALADIN_ITA_MAIN_URI
-          value: "${PALADIN_ITA_MAIN_URI}"
-        - name: PALADIN_ITA_USERNAME
-          value: "${PALADIN_ITA_USERNAME}"
-        - name: PALADIN_ITA_PASSWORD
-          value: "${PALADIN_ITA_PASSWORD}"
-        - name: PALADIN_METAL_HOST
-          value: "${PALADIN_METAL_HOST}"
-        - name: PALADIN_ALERT_EMAIL
-          value: "${PALADIN_ALERT_EMAIL}"
-        - name: PALADIN_ALERT_PHONE
-          value: "${PALADIN_ALERT_PHONE}"
-        - name: CLASSIC_OCS_HOST
-          value: "${CLASSIC_OCS_HOST}"
-        - name: CLASSIC_OCS_PORT
-          value: "${CLASSIC_OCS_PORT}"
-        - name: CLASSIC_OCS_USERNAME
-          value: "${CLASSIC_OCS_USERNAME}"
-        - name: CLASSIC_OCS_PASSWORD
-          value: "${CLASSIC_OCS_PASSWORD}"
-        image: {{ image_name }}
-        imagePullPolicy: Always 
-        name: {{ project }}-{{ role }}-{{ env_name }}
-      dnsPolicy: "None"
-      dnsConfig:
-        nameservers:
-          - ${DNS_HOST_1}
-          - ${DNS_HOST_2}
-        searches:
-          - ${DNS_SEARCH_DOMAIN_NAME}
-        options:
-          - name: ndots
-            value: "2"
-          - name: use-vc 
-      imagePullSecrets:
-      - name: default-secret
+  schedule: "*/5 * * * *"
+  jobTemplate: 
+    spec: 
+      template: 
+        spec:
+          containers:
+          - env:
+            - name: NODE_ENV
+              value: "production"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: OSS_BUCKET_DATA
+              value: "${OSS_BUCKET_DATA}"
+            - name: COMMON_ALIYUN_ACCESS_ID
+              value: "${COMMON_ALIYUN_ACCESS_ID}"
+            - name: COMMON_ALIYUN_ACCESS_SECRET
+              value: "${COMMON_ALIYUN_ACCESS_SECRET}"
+            - name: HARDCORE_OSS_ENDPOINT
+              value: "${HARDCORE_OSS_ENDPOINT}"
+            - name: PALADIN_EA_MAIN_URI
+              value: "${PALADIN_EA_MAIN_URI}"
+            - name: PALADIN_EA_USERNAME
+              value: "${PALADIN_EA_USERNAME}"
+            - name: PALADIN_EA_PASSWORD
+              value: "${PALADIN_EA_PASSWORD}"
+            - name: PALADIN_FA_MAIN_URI
+              value: "${PALADIN_FA_MAIN_URI}"
+            - name: PALADIN_FA_USERNAME
+              value: "${PALADIN_FA_USERNAME}"
+            - name: PALADIN_FA_PASSWORD
+              value: "${PALADIN_FA_PASSWORD}"
+            - name: PALADIN_MA_MAIN_URI
+              value: "${PALADIN_MA_MAIN_URI}"
+            - name: PALADIN_MA_USERNAME
+              value: "${PALADIN_MA_USERNAME}"
+            - name: PALADIN_MA_PASSWORD
+              value: "${PALADIN_MA_PASSWORD}"
+            - name: PALADIN_DA_MAIN_URI
+              value: "${PALADIN_DA_MAIN_URI}"
+            - name: PALADIN_DA_USERNAME
+              value: "${PALADIN_DA_USERNAME}"
+            - name: PALADIN_DA_PASSWORD
+              value: "${PALADIN_DA_PASSWORD}"
+            - name: PALADIN_ITA_MAIN_URI
+              value: "${PALADIN_ITA_MAIN_URI}"
+            - name: PALADIN_ITA_USERNAME
+              value: "${PALADIN_ITA_USERNAME}"
+            - name: PALADIN_ITA_PASSWORD
+              value: "${PALADIN_ITA_PASSWORD}"
+            - name: PALADIN_METAL_HOST
+              value: "${PALADIN_METAL_HOST}"
+            - name: PALADIN_ALERT_EMAIL
+              value: "${PALADIN_ALERT_EMAIL}"
+            - name: PALADIN_ALERT_PHONE
+              value: "${PALADIN_ALERT_PHONE}"
+            - name: CLASSIC_OCS_HOST
+              value: "${CLASSIC_OCS_HOST}"
+            - name: CLASSIC_OCS_PORT
+              value: "${CLASSIC_OCS_PORT}"
+            - name: CLASSIC_OCS_USERNAME
+              value: "${CLASSIC_OCS_USERNAME}"
+            - name: CLASSIC_OCS_PASSWORD
+              value: "${CLASSIC_OCS_PASSWORD}"
+            image: {{ image_name }}
+            imagePullPolicy: Always 
+            name: {{ project }}-{{ role }}-{{ env_name }}
+          dnsPolicy: "None"
+          dnsConfig:
+            nameservers:
+              - ${DNS_HOST_1}
+              - ${DNS_HOST_2}
+            searches:
+              - ${DNS_SEARCH_DOMAIN_NAME}
+            options:
+              - name: ndots
+                value: "2"
+              - name: use-vc 
+          imagePullSecrets:
+          - name: default-secret
