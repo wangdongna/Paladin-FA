@@ -268,7 +268,7 @@ async function start(){
         width: 1920,
         height: 1080
       },
-      args: ['--lang=zh-cn', '--disable-dev-shm-usage'] 
+      args: ['--lang=zh-cn', '--disable-dev-shm-usage','--no-sandbox', '--disable-setuid-sandbox'] 
     });
 
     let config1 = config.configList[i]
