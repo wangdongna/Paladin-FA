@@ -19,7 +19,6 @@ const accessKeySecret = process.env["COMMON_ALIYUN_ACCESS_SECRET"]
 const accessKeyId = process.env["COMMON_ALIYUN_ACCESS_ID"]
 const bucket = process.env["OSS_BUCKET_DATA"]
 const NODE_ENV = process.env["NODE_ENV"]
-const DOCKER_TYPE = process.env["DOCKER_TYPE"]
 
 const TIMEOUT = process.env["TIMEOUT"] || "30";
 
@@ -269,7 +268,7 @@ async function start(){
         width: 1920,
         height: 1080
       },
-      args: ['--lang=zh-cn', '--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox'] 
+      args: ['--lang=zh-cn', '--disable-dev-shm-usage'] 
     });
 
     let config1 = config.configList[i]
@@ -296,13 +295,6 @@ async function start(){
     }
   }
 }
-// start();
-if(DOCKER_TYPE === "swarm" || DOCKER_TYPE === "k8s"){
-  start()
-  setInterval(async ()=> {
-    await start()
-  }, 5 * 60 * 1000) //per 5 minutes
-}
-else {
-  start();
-}
+
+start();
+
