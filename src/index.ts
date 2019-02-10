@@ -262,40 +262,49 @@ function cleanImage() {
 // uploadAndCleanImage()
 // cleanImage()
 async function start(){
-  for(let i=0; i< config.configList.length; ++i){
-    const browser = await puppeteer.launch({
-      defaultViewport: {
-        width: 1920,
-        height: 1080
-      },
-      args: ['--lang=zh-cn', '--disable-dev-shm-usage','--no-sandbox', '--disable-setuid-sandbox'] 
-    });
+  try {
 
-    let config1 = config.configList[i]
-    const page = await createPage(browser)
-    logger.info("page created for: %s", config1.prodName)
-    try {
-      await run(page, config1);
-      await page.close()
-      notification.success(config1.prodName)
+    await notification.syncLastStatus(ossClient)
+    for(let i=0; i< config.configList.length; ++i){
+      const browser = await puppeteer.launch({
+        defaultViewport: {
+          width: 1920,
+          height: 1080
+        },
+        args: ['--lang=zh-cn', '--disable-dev-shm-usage','--no-sandbox', '--disable-setuid-sandbox'] 
+      });
+
+      let config1 = config.configList[i]
+      const page = await createPage(browser)
+      logger.info("page created for: %s", config1.prodName)
+      try {
+        await run(page, config1);
+        await page.close()
+        notification.success(config1.prodName)
+      }
+      catch(error) {
+        logger.error(error)
+        logger.error(page.url())
+        let errorFileName = getImageName("error")
+        await page.screenshot({ path: path.join(__dirname, errorFileName)});
+        await page.close()
+        notification.error(config1.prodName, error)
+      }
+      finally {
+        await upload(config1)
+        cleanImage()
+        await browser.close();
+        logger.info("browser closed")
+      }
     }
-    catch(error) {
-      logger.error(error)
-      logger.error(page.url())
-      let errorFileName = getImageName("error")
-      await page.screenshot({ path: path.join(__dirname, errorFileName)});
-      await page.close()
-      notification.error(config1.prodName, error)
-    }
-    finally {
-      await upload(config1)
-      cleanImage()
-      await browser.close();
-      logger.info("browser closed")
-    }
+    await notification.pushLastStatus(ossClient)
+    process.exit(0)
+        
+  } catch (error) {
+    logger.fatal("Unknown error: %s", error)
+    process.exit(0)
   }
-  process.exit(0)
 }
 
 start();
-
+logger.info("started")
