@@ -1,6 +1,7 @@
 import * as request from "request"
 import { getLogger } from "log4js";
 import * as moment from "moment";
+import * as OSS from "ali-oss"
 
 let metalHost = process.env["PALADIN_METAL_HOST"];
 let alertEmail = process.env["PALADIN_ALERT_EMAIL"];
@@ -90,7 +91,34 @@ let errMap: {[key: string]: number} = {}
 const ERROR_MSG = "登录异常"
 const RECOVER_MSG = "登录恢复"
 
+const STATUS_FILE = "paladin/paladin-status";
+
 export default {
+  async syncLastStatus(ossClient: OSS) {
+    try {
+      let result = await ossClient.get(STATUS_FILE);
+      let content = result.content.toString("utf-8")
+      logger.debug("syncLastStatus result: %s", content)
+      errMap = JSON.parse(content)
+    } catch (error) {
+      let code = error.code
+      logger.info("syncLastStatus error code: %s", code)
+      if(code === "NoSuchKey") {
+        await this.pushLastStatus(ossClient)
+      }
+    }
+    
+  },
+  async pushLastStatus(ossClient: OSS) {
+    try {
+      let content = JSON.stringify(errMap)
+      logger.debug("pushLastStatus content is: %s", content)
+      let ret = await ossClient.put(STATUS_FILE, Buffer.from(content, "utf-8"))
+      logger.debug("pushLastStatus result status: %j", ret.res.status)
+    } catch (error) {
+      logger.error("pushLastStatus error: %s", error)
+    }
+  },
   error(prodInfo: string, error: string) {
     let counter = errMap[prodInfo];
     if(counter) {

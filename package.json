@@ -6,9 +6,9 @@
   "scripts": {
     "watch": "tsc -p ./ -w",
     "build": "cross-env NODE_ENV=production tsc -p ./",
-    "start": "node ./dist/index.js",
-    "dev": "nodemon -r dotenv/config ./dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./dist/src/index.js",
+    "dev": "nodemon -r dotenv/config ./dist/src/index.js",
+    "test": "nodemon -r dotenv/config ./dist/test/index.js"
   },
   "author": "",
   "license": "ISC",
