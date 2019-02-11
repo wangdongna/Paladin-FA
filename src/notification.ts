@@ -91,7 +91,7 @@ let errMap: {[key: string]: number} = {}
 const ERROR_MSG = "登录异常"
 const RECOVER_MSG = "登录恢复"
 
-const STATUS_FILE = "paladin/paladin-status";
+const STATUS_FILE = "paladin/paladin-status.json";
 
 export default {
   async syncLastStatus(ossClient: OSS) {
@@ -123,6 +123,7 @@ export default {
     let counter = errMap[prodInfo];
     if(counter) {
       counter++;
+      errMap[prodInfo] = counter
       if(counter == 2 || counter == 4){
         sendNotification(prodInfo, ERROR_MSG, 0)
       }
