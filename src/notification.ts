@@ -17,7 +17,27 @@ if(!metalHost || !alertEmail || !alertPhone) {
 
 let emails = alertEmail.split(",");
 let phones = alertPhone.split(",");
-let counter = 50
+
+
+interface ErrorMap {
+  counter: number
+  time: string
+}
+
+interface Status {
+  notificationCounter: number
+  errorMap: {
+    [prodName: string]: ErrorMap
+  }
+}
+
+let status: Status = {
+  notificationCounter: 50,
+  errorMap: {
+
+  }
+}
+
 
 function sendEmail(title: string, error: string, delay: number){
   request({
@@ -72,21 +92,20 @@ function sendSMS(prodInfo: string, info: string, delay: number){
 }
 
 function decCounter() {
-  counter--;
-  if(counter <= 5 && counter > 0) {
+  status.notificationCounter--;
+  if(status.notificationCounter <= 5 && status.notificationCounter > 0) {
     sendEmail(`Paladin 阈值`, "Paladin 阈值 is less than 5, need restart container", 0)
   }
 }
 
 function sendNotification(prodInfo: string, error: string, delay: number) {
-  if(counter > 5){
+  if(status.notificationCounter > 5){
     sendEmail(`${prodInfo}登录异常`, error, delay)
     sendSMS(prodInfo, error, delay)
   }
   decCounter()
 }
 
-let errMap: {[key: string]: number} = {}
 
 const ERROR_MSG = "登录异常"
 const RECOVER_MSG = "登录恢复"
@@ -99,7 +118,7 @@ export default {
       let result = await ossClient.get(STATUS_FILE);
       let content = result.content.toString("utf-8")
       logger.debug("syncLastStatus result: %s", content)
-      errMap = JSON.parse(content)
+      status = JSON.parse(content)
     } catch (error) {
       let code = error.code
       logger.info("syncLastStatus error code: %s", code)
@@ -111,7 +130,7 @@ export default {
   },
   async pushLastStatus(ossClient: OSS) {
     try {
-      let content = JSON.stringify(errMap)
+      let content = JSON.stringify(status)
       logger.debug("pushLastStatus content is: %s", content)
       let ret = await ossClient.put(STATUS_FILE, Buffer.from(content, "utf-8"))
       logger.debug("pushLastStatus result status: %j", ret.res.status)
@@ -120,26 +139,33 @@ export default {
     }
   },
   error(prodInfo: string, error: string) {
-    let counter = errMap[prodInfo];
-    if(counter) {
+    let now = moment().utcOffset(8);
+    if(!status.errorMap[prodInfo]) {
+      status.errorMap[prodInfo] = {counter: 1, time: now.toJSON()}
+    }
+    else {
+      let {counter, time} = status.errorMap[prodInfo];
+      
       counter++;
-      errMap[prodInfo] = counter
       if(counter == 2 || counter == 4){
         sendNotification(prodInfo, ERROR_MSG, 0)
       }
       else if(counter > 4) {
-        sendNotification(prodInfo, ERROR_MSG, 60*60)
+        let lastTime = moment(time).unix()
+        let nowTime = now.unix()
+        if((nowTime - lastTime) > 60 * 60) {
+          sendNotification(prodInfo, ERROR_MSG, 0)
+        }
       }
+      status.errorMap[prodInfo] = {counter, time: now.toJSON()}
     }
-    else{
-      errMap[prodInfo] = 1
-    }
+
   },
   success(prodInfo: string) {
-    if(errMap[prodInfo]){
+    if(status.errorMap[prodInfo] && status.errorMap[prodInfo].counter > 0){
       sendNotification(prodInfo, RECOVER_MSG, 0)
     }
-    errMap[prodInfo] = 0
+    status.errorMap[prodInfo] = {counter: 0, time: ""}
   }
   
 }
