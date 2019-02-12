@@ -100,7 +100,7 @@ function decCounter() {
 
 function sendNotification(prodInfo: string, error: string, delay: number) {
   if(status.notificationCounter > 5){
-    sendEmail(`${prodInfo}登录异常`, error, delay)
+    sendEmail(`${prodInfo}${error}`, error, delay)
     sendSMS(prodInfo, error, delay)
   }
   decCounter()
