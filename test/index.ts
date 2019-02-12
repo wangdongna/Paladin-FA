@@ -2,6 +2,7 @@ import notificaiton from "../src/notification"
 import * as OSS from "ali-oss"
 import {configure, getLogger } from "log4js";
 import logConfig from "../src/logConfig";
+import * as moment from "moment"
 
 const LOG_LEVEL = "DEBUG"
 
@@ -29,3 +30,5 @@ const ossClient = new OSS({
 });
 
 (async () => await notificaiton.syncLastStatus(ossClient))()
+
+logger.debug(moment(moment().toJSON()).unix())
