@@ -21,25 +21,20 @@ let phones = alertPhone.split(",");
 
 interface ErrorMap {
   counter: number
+  sendCounter: number
   time: string
 }
 
 interface Status {
-  notificationCounter: number
-  errorMap: {
-    [prodName: string]: ErrorMap
-  }
+  [key: string]: ErrorMap
 }
 
 let status: Status = {
-  notificationCounter: 50,
-  errorMap: {
 
-  }
 }
 
 
-function sendEmail(title: string, error: string, delay: number){
+function sendEmail(title: string, error: string, delay: number = 0){
   request({
     uri: metalHost + "/api/message/send",
     method: "POST",
@@ -65,7 +60,7 @@ function sendEmail(title: string, error: string, delay: number){
   })
 }
 
-function sendSMS(prodInfo: string, info: string, delay: number){
+function sendSMS(prodInfo: string, info: string, delay: number = 0){
   let time = moment().utcOffset(8).format("YYYY-MM-DD HH:mm:ss")
   request({
     uri: metalHost + "/api/message/send",
@@ -91,19 +86,10 @@ function sendSMS(prodInfo: string, info: string, delay: number){
     logger.info("sms sent : %s", prodInfo)  })
 }
 
-function decCounter() {
-  status.notificationCounter--;
-  if(status.notificationCounter <= 5 && status.notificationCounter > 0) {
-    sendEmail(`Paladin 阈值`, "Paladin 阈值 is less than 5, need restart container", 0)
-  }
-}
 
-function sendNotification(prodInfo: string, error: string, delay: number) {
-  if(status.notificationCounter > 5){
-    sendEmail(`${prodInfo}${error}`, error, delay)
-    sendSMS(prodInfo, error, delay)
-  }
-  decCounter()
+function sendNotification(prodInfo: string, error: string) {
+  sendEmail(`${prodInfo}${error}`, error)
+  sendSMS(prodInfo, error)
 }
 
 
@@ -140,32 +126,34 @@ export default {
   },
   error(prodInfo: string, error: string) {
     let now = moment().utcOffset(8);
-    if(!status.errorMap[prodInfo]) {
-      status.errorMap[prodInfo] = {counter: 1, time: now.toJSON()}
+    if(!status[prodInfo]) {
+      status[prodInfo] = {counter: 1, sendCounter:0, time: now.toJSON()}
     }
     else {
-      let {counter, time} = status.errorMap[prodInfo];
+      let {counter, sendCounter, time} = status[prodInfo];
       
       counter++;
       if(counter == 2 || counter == 4){
-        sendNotification(prodInfo, ERROR_MSG, 0)
+        sendCounter += 1
+        sendNotification(prodInfo, ERROR_MSG)
       }
       else if(counter > 4) {
         let lastTime = moment(time).unix()
         let nowTime = now.unix()
-        if((nowTime - lastTime) > 60 * 60) {
-          sendNotification(prodInfo, ERROR_MSG, 0)
+        if((nowTime - lastTime) > 60 * 60 * (sendCounter - 1)) {
+          sendCounter += 1
+          sendNotification(prodInfo, ERROR_MSG)
         }
       }
-      status.errorMap[prodInfo] = {counter, time: now.toJSON()}
+      status[prodInfo] = {counter, sendCounter, time: now.toJSON()}
     }
 
   },
   success(prodInfo: string) {
-    if(status.errorMap[prodInfo] && status.errorMap[prodInfo].counter > 0){
-      sendNotification(prodInfo, RECOVER_MSG, 0)
+    if(status[prodInfo] && status[prodInfo].sendCounter > 0){
+      sendNotification(prodInfo, RECOVER_MSG)
     }
-    status.errorMap[prodInfo] = {counter: 0, time: ""}
+    status[prodInfo] = {counter: 0, sendCounter: 0, time: ""}
   }
   
 }
