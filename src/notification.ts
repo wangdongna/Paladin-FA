@@ -153,7 +153,7 @@ export default {
       else if(counter > 4) {
         let lastTime = moment(time).unix()
         let nowTime = now.unix()
-        if(nowTime - lastTime > 60 * 60) {
+        if((nowTime - lastTime) > 60 * 60) {
           sendNotification(prodInfo, ERROR_MSG, 0)
         }
       }
