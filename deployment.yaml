@@ -1,9 +1,9 @@
 apiVersion: batch/v1beta1
 kind: CronJob 
 metadata: 
-  name: {{ project }}-{{ role }}-{{ env_name }}-{{ PROD_NAME }}
+  name: {{ project }}-{{ role }}-{{ env_name }}-{{ PROD_CODE_NAME }}
   labels:
-    app: {{ project }}-{{ role }}-{{ env_name }}-{{ PROD_NAME }}
+    app: {{ project }}-{{ role }}-{{ env_name }}-{{ PROD_CODE_NAME }}
 spec: 
   schedule: "*/1 * * * *"
   concurrencyPolicy: "Replace"
@@ -15,8 +15,8 @@ spec:
           - env:
             - name: NODE_ENV
               value: "production"
-            - name: PROD_NAME
-              value: "{{ PROD_NAME }}"
+            - name: PROD_CODE_NAME
+              value: "{{ PROD_CODE_NAME }}"
             - name: LOG_LEVEL
               value: "INFO"
             - name: OSS_BUCKET_DATA

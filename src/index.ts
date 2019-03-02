@@ -20,7 +20,7 @@ const accessKeyId = process.env["COMMON_ALIYUN_ACCESS_ID"]
 const bucket = process.env["OSS_BUCKET_DATA"]
 const NODE_ENV = process.env["NODE_ENV"]
 
-const PROD_NAME = process.env["PROD_NAME"]
+const PROD_CODE_NAME = process.env["PROD_CODE_NAME"]
 
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "10") * 1000;
 const CLICK_TIMEOUT = parseInt(process.env["CLICK_TIMEOUT"] || "2") * 1000;
@@ -269,7 +269,7 @@ function cleanImage() {
 // cleanImage()
 async function start(){
   try {
-    let config1 = config.configList.find((value) => value.prodName === PROD_NAME)
+    let config1 = config.configList.find((value) => value.codeName === PROD_CODE_NAME)
     await notification.syncLastStatus(ossClient, config1)
     const browser = await puppeteer.launch({
       defaultViewport: {
