@@ -1,9 +1,9 @@
 apiVersion: batch/v1beta1
 kind: CronJob 
 metadata: 
-  name: {{ project }}-{{ role }}-{{ env_name }}-{{ PROD_CODE_NAME }}
+  name: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
   labels:
-    app: {{ project }}-{{ role }}-{{ env_name }}-{{ PROD_CODE_NAME }}
+    app: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
 spec: 
   schedule: "*/1 * * * *"
   concurrencyPolicy: "Replace"
@@ -73,7 +73,7 @@ spec:
               value: "${CLASSIC_OCS_PASSWORD}"
             image: {{ image_name }}
             imagePullPolicy: Always 
-            name: {{ project }}-{{ role }}-{{ env_name }}-{{ PROD_CODE_NAME }}
+            name: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
           dnsPolicy: "None"
           dnsConfig:
             nameservers:
