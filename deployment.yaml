@@ -73,7 +73,7 @@ spec:
               value: "${CLASSIC_OCS_PASSWORD}"
             image: {{ image_name }}
             imagePullPolicy: Always 
-            name: {{ project }}-{{ role }}-{{ env_name }}-{{ PROD_NAME }}
+            name: {{ project }}-{{ role }}-{{ env_name }}-{{ PROD_CODE_NAME }}
           dnsPolicy: "None"
           dnsConfig:
             nameservers:
