@@ -222,7 +222,7 @@ async function logoutProcess(page: puppeteer.Page, config: config.Config) {
   await page.click(".dialog-actions>button")
   logger.info("confirm click logout button");
 
-  await page.waitForSelector(config.loginButtonClass, timeoutOption)
+  await page.waitForSelector(config.loginButtonClass) //logout not critical path, could wait longer
   logger.info("logout success")
 
 
