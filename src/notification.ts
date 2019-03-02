@@ -138,7 +138,7 @@ export default {
       let {counter, sendCounter, time} = status[prodInfo];
       
       counter++;
-      if(counter >= 2){
+      if(counter >= 2 && counter <= 3){
         sendCounter += 1
         sendNotification(prodInfo, ERROR_MSG + checkRoleList)
       }

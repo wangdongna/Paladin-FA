@@ -31,4 +31,10 @@ const ossClient = new OSS({
 
 // (async () => await notificaiton.syncLastStatus(ossClient))()
 
-logger.debug(moment(moment().toJSON()).unix())
+let now = moment().utcOffset(8);
+logger.debug("now:%s", now.toJSON())
+let lastTime = moment("2019-03-02T10:24:11.157Z").utcOffset(8).unix()
+let nowTime = now.unix()
+
+logger.debug(nowTime - lastTime)
+// logger.debug(moment(moment().toJSON()).unix())
