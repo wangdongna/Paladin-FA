@@ -1,3 +1,4 @@
+import { Config } from './prodConfig';
 import * as request from "request"
 import { getLogger } from "log4js";
 import * as moment from "moment";
@@ -93,15 +94,19 @@ function sendNotification(prodInfo: string, error: string) {
 }
 
 
-const ERROR_MSG = "登录异常"
+const ERROR_MSG = "登录异常,可能出现问题的角色有："
 const RECOVER_MSG = "登录恢复"
 
 const STATUS_FILE = "paladin/paladin-status.json";
 
+function getStatusFile(prodName: string) {
+  return `paladin/${prodName}-status.json`
+}
+
 export default {
-  async syncLastStatus(ossClient: OSS) {
+  async syncLastStatus(ossClient: OSS, config: Config) {
     try {
-      let result = await ossClient.get(STATUS_FILE);
+      let result = await ossClient.get(getStatusFile(config.prodName));
       let content = result.content.toString("utf-8")
       logger.debug("syncLastStatus result: %s", content)
       status = JSON.parse(content)
@@ -109,22 +114,22 @@ export default {
       let code = error.code
       logger.info("syncLastStatus error code: %s", code)
       if(code === "NoSuchKey") {
-        await this.pushLastStatus(ossClient)
+        await this.pushLastStatus(ossClient, config)
       }
     }
     
   },
-  async pushLastStatus(ossClient: OSS) {
+  async pushLastStatus(ossClient: OSS, config: Config) {
     try {
       let content = JSON.stringify(status)
       logger.debug("pushLastStatus content is: %s", content)
-      let ret = await ossClient.put(STATUS_FILE, Buffer.from(content, "utf-8"))
+      let ret = await ossClient.put(getStatusFile(config.prodName), Buffer.from(content, "utf-8"))
       logger.debug("pushLastStatus result status: %j", ret.res.status)
     } catch (error) {
       logger.error("pushLastStatus error: %s", error)
     }
   },
-  error(prodInfo: string, error: string) {
+  error(prodInfo: string, error: string, checkRoleList: string) {
     let now = moment().utcOffset(8);
     if(!status[prodInfo]) {
       status[prodInfo] = {counter: 1, sendCounter:0, time: now.toJSON()}
@@ -133,16 +138,16 @@ export default {
       let {counter, sendCounter, time} = status[prodInfo];
       
       counter++;
-      if(counter == 2 || counter == 4){
+      if(counter >= 2){
         sendCounter += 1
-        sendNotification(prodInfo, ERROR_MSG)
+        sendNotification(prodInfo, ERROR_MSG + checkRoleList)
       }
-      else if(counter > 4) {
+      else if(counter > 3) {
         let lastTime = moment(time).unix()
         let nowTime = now.unix()
-        if((nowTime - lastTime) > 60 * 60 * (sendCounter - 1)) {
+        if((nowTime - lastTime) > 60 * 60) {
           sendCounter += 1
-          sendNotification(prodInfo, ERROR_MSG)
+          sendNotification(prodInfo, ERROR_MSG + checkRoleList)
         }
       }
       status[prodInfo] = {counter, sendCounter, time: now.toJSON()}
