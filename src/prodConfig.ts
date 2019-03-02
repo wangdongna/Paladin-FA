@@ -26,6 +26,7 @@ const PALADIN_ITA_PASSWORD = process.env["PALADIN_ITA_PASSWORD"]
 
 export interface Config {
   prodName: string
+  codeName: string
   mainUri: string
   username: string
   password: string
@@ -38,6 +39,7 @@ export interface Config {
 export const configList: Array<Config> = [
   {
     prodName: "云能效",
+    codeName: "jazz",
     mainUri: PALADIN_EA_MAINURI,
     username: PALADIN_EA_USERNAME,
     password: PALADIN_EA_PASSWORD,
@@ -47,6 +49,7 @@ export const configList: Array<Config> = [
   },
   {
     prodName: "千里眼",
+    codeName: "pop",
     mainUri: PALADIN_FA_MAINURI,
     username: PALADIN_FA_USERNAME,
     password: PALADIN_FA_PASSWORD,
@@ -56,6 +59,7 @@ export const configList: Array<Config> = [
   },
   {
     prodName: "机器顾问",
+    codeName: "hiphop",
     mainUri: PALADIN_MA_MAINURI,
     username: PALADIN_MA_USERNAME,
     password: PALADIN_MA_PASSWORD,
@@ -65,6 +69,7 @@ export const configList: Array<Config> = [
   },
   {
     prodName: "变频顾问",
+    codeName: "funk",
     mainUri: PALADIN_DA_MAINURI,
     username: PALADIN_DA_USERNAME,
     password: PALADIN_DA_PASSWORD,
@@ -74,6 +79,7 @@ export const configList: Array<Config> = [
   },
   {
     prodName: "信息顾问",
+    codeName: "electronic",
     mainUri: PALADIN_ITA_MAINURI,
     username: PALADIN_ITA_USERNAME,
     password: PALADIN_ITA_PASSWORD,

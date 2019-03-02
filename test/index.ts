@@ -29,6 +29,6 @@ const ossClient = new OSS({
   internal: false
 });
 
-(async () => await notificaiton.syncLastStatus(ossClient))()
+// (async () => await notificaiton.syncLastStatus(ossClient))()
 
 logger.debug(moment(moment().toJSON()).unix())

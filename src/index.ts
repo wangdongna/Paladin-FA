@@ -20,7 +20,10 @@ const accessKeyId = process.env["COMMON_ALIYUN_ACCESS_ID"]
 const bucket = process.env["OSS_BUCKET_DATA"]
 const NODE_ENV = process.env["NODE_ENV"]
 
-const TIMEOUT = process.env["TIMEOUT"] || "30";
+const PROD_NAME = process.env["PROD_NAME"]
+
+const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "10") * 1000;
+const CLICK_TIMEOUT = parseInt(process.env["CLICK_TIMEOUT"] || "2") * 1000;
 
 
 let envArgs: Array<string> = ["CLASSIC_OCS_HOST", "CLASSIC_OCS_PORT", "CLASSIC_OCS_USERNAME", "CLASSIC_OCS_PASSWORD", "LOG_LEVEL", "NODE_ENV", "HARDCORE_OSS_ENDPOINT", "OSS_BUCKET_DATA", "COMMON_ALIYUN_ACCESS_SECRET", "COMMON_ALIYUN_ACCESS_ID"]
@@ -53,7 +56,7 @@ async function createPage(browser: puppeteer.Browser) {
   const page = await browser.newPage();
   // page.setCacheEnabled(false)
   page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36 Paladin")
-  page.setDefaultNavigationTimeout(parseInt(TIMEOUT) * 1000)
+  page.setDefaultNavigationTimeout(NAV_TIMEOUT)
   page.on("requestfailed", (request) => {
     logger.debug("requestfailed: %s", request.url())
   })
@@ -80,25 +83,25 @@ function getImageName(key: string) {
 }
 
 
-const timeoutOption = {timeout: parseInt(TIMEOUT) * 1000} // timeout is 60 seconds
+const navigationOption: puppeteer.NavigationOptions = { waitUntil: ["domcontentloaded"] }
+const navigationIdleOption: puppeteer.NavigationOptions = { waitUntil: ["networkidle0"] } 
 
-const navigationOption = Object.assign({}, timeoutOption, {waitUntil: ["domcontentloaded"]})
-const navigationIdleOption = Object.assign({}, timeoutOption, {waitUntil: ["networkidle0"]})
+const timeoutOption = {timeout: CLICK_TIMEOUT}
 
 const memClient = createMemClient()
 
- 
+let checkRoleList = ""
+
 async function run(page: puppeteer.Page, config: config.Config) {
   console.time(config.prodName)
-
-  let response = await page.goto(config.mainUri, timeoutOption)
-  if(response) {
+  checkRoleList = `${config.codeName}-ui`;
+  let response = await page.goto(config.mainUri)
+  if(response && response.status() === 200) {
     logger.info("enter page: %s", response.url())
   }
   else {
     logger.error("fail to enter page: %s", config.mainUri)
-    //skip this case 
-    return
+    throw new Error(`enter page faile: ${response.url()}`)
   }
   
 
@@ -113,7 +116,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
     throw new Error("unknow error")
   }
   
-
+  checkRoleList = `guard-ui,guard,classic`;
   let responses = await Promise.all([
     await page.click(config.loginButtonClass),
     await page.waitForNavigation(navigationOption),
@@ -129,7 +132,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
   
 
   const veriCodeRes = await page.waitForResponse(
-    response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200, timeoutOption);
+    response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200);
   logger.info("veri code got it")
 
   let imageName = getImageName("sso");
@@ -155,6 +158,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
     
         
         let buttons = await page.$$(".pop-login-form-content-button button")
+        checkRoleList = `${config.codeName}-webapi,${config.codeName}-app`;
         let responses = await Promise.all([
           await buttons[1].click(),
           await page.waitForNavigation(navigationOption),
@@ -170,7 +174,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
         
     
         await page.waitForSelector(config.spMgmtClass, timeoutOption)
-        await page.waitFor(10 * 1000); //wait for 10 seconds
+        // await page.waitFor(10 * 1000); //wait for 10 seconds
         logger.info("login success") 
         
     
@@ -178,6 +182,8 @@ async function run(page: puppeteer.Page, config: config.Config) {
         await page.screenshot({ path: path.join(__dirname, imageName) });
         logger.info("screenshot finished, name is %s", imageName)
     
+        checkRoleList = `end`;
+
         await logoutProcess(page, config)
 
         console.timeEnd(config.prodName)
@@ -198,19 +204,19 @@ async function logoutProcess(page: puppeteer.Page, config: config.Config) {
   await page.click(config.spMgmtClass) //enter manage
   logger.info("enter management page success");
 
-  await page.waitForSelector(config.userClass) //wait for page
+  await page.waitForSelector(config.userClass, timeoutOption) //wait for page
   logger.info("sidebar appear success");
   
   await page.click(config.userClass) //click user
   logger.info("sidebar user clicked");
 
-  await page.waitForSelector(".sidebar-bottom-action") //wait for sidebar
+  await page.waitForSelector(".sidebar-bottom-action", timeoutOption) //wait for sidebar
   logger.info("logout appear success");
 
   await page.click(".sidebar-bottom-action>button") //click logout
   logger.info("logout clicked");
 
-  await page.waitForSelector(".dialog-actions") //wait for dialog
+  await page.waitForSelector(".dialog-actions", timeoutOption) //wait for dialog
   logger.info("logout double confirmed shown");
 
   await page.click(".dialog-actions>button")
@@ -263,41 +269,39 @@ function cleanImage() {
 // cleanImage()
 async function start(){
   try {
-
-    await notification.syncLastStatus(ossClient)
-    for(let i=0; i< config.configList.length; ++i){
-      const browser = await puppeteer.launch({
-        defaultViewport: {
-          width: 1920,
-          height: 1080
-        },
-        args: ['--lang=zh-cn', '--disable-dev-shm-usage','--no-sandbox', '--disable-setuid-sandbox'] 
-      });
-
-      let config1 = config.configList[i]
-      const page = await createPage(browser)
-      logger.info("page created for: %s", config1.prodName)
-      try {
-        await run(page, config1);
-        await page.close()
-        notification.success(config1.prodName)
-      }
-      catch(error) {
-        logger.error(error)
-        logger.error(page.url())
-        let errorFileName = getImageName("error")
-        await page.screenshot({ path: path.join(__dirname, errorFileName)});
-        await page.close()
-        notification.error(config1.prodName, error)
-      }
-      finally {
-        await upload(config1)
-        cleanImage()
-        await browser.close();
-        logger.info("browser closed")
-      }
+    let config1 = config.configList.find((value) => value.prodName === PROD_NAME)
+    await notification.syncLastStatus(ossClient, config1)
+    const browser = await puppeteer.launch({
+      defaultViewport: {
+        width: 1920,
+        height: 1080
+      },
+      args: ['--lang=zh-cn', '--disable-dev-shm-usage','--no-sandbox', '--disable-setuid-sandbox'] 
+    });
+    checkRoleList = ""
+    const page = await createPage(browser)
+    logger.info("page created for: %s", config1.prodName)
+    try {
+      await run(page, config1);
+      await page.close()
+      notification.success(config1.prodName)
     }
-    await notification.pushLastStatus(ossClient)
+    catch(error) {
+      logger.error(error)
+      logger.error(page.url())
+      let errorFileName = getImageName("error")
+      await page.screenshot({ path: path.join(__dirname, errorFileName)});
+      await page.close()
+      notification.error(config1.prodName, error, checkRoleList)
+    }
+    finally {
+      await upload(config1)
+      cleanImage()
+      await browser.close();
+      logger.info("browser closed")
+    }
+    
+    await notification.pushLastStatus(ossClient, config1)
     process.exit(0)
         
   } catch (error) {
