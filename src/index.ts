@@ -96,13 +96,20 @@ async function run(page: puppeteer.Page, config: config.Config) {
   console.time(config.prodName)
   checkRoleList = `${config.codeName}-ui`;
   let response = await page.goto(config.mainUri)
-  if(response && response.status() === 200) {
-    logger.info("enter page: %s", response.url())
+  // quote from official website
+  // page.goto either throw or return a main resource response. 
+  // The only exceptions are navigation to about:blank or navigation to the 
+  // same URL with a different hash, which would succeed and return null
+  if(response) {
+    if(response.status() === 200) {
+      logger.info("enter page: %s", response.url())
+    }
+    else {
+      logger.error("fail to enter page: %s", config.mainUri)
+      throw new Error(`enter page failed: ${response.url()}`)
+    }
   }
-  else {
-    logger.error("fail to enter page: %s", config.mainUri)
-    throw new Error(`enter page faile: ${response.url()}`)
-  }
+  
   
 
   let loginButton = await page.waitForSelector(config.loginButtonClass, timeoutOption)
