@@ -22,7 +22,7 @@ const NODE_ENV = process.env["NODE_ENV"]
 
 const PROD_CODE_NAME = process.env["PROD_CODE_NAME"]
 
-const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "10") * 1000;
+const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15") * 1000;
 const CLICK_TIMEOUT = parseInt(process.env["CLICK_TIMEOUT"] || "2") * 1000;
 
 
