@@ -97,8 +97,6 @@ function sendNotification(prodInfo: string, error: string) {
 const ERROR_MSG = "登录异常,可能出现问题的角色有："
 const RECOVER_MSG = "登录恢复"
 
-const STATUS_FILE = "paladin/paladin-status.json";
-
 function getStatusFile(prodName: string) {
   return `paladin/${prodName}-status.json`
 }

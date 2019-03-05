@@ -84,8 +84,6 @@ function getImageName(key: string) {
 
 
 const navigationOption: puppeteer.NavigationOptions = { waitUntil: ["domcontentloaded"] }
-const navigationIdleOption: puppeteer.NavigationOptions = { waitUntil: ["networkidle0"] } 
-
 const timeoutOption = {timeout: CLICK_TIMEOUT}
 
 const memClient = createMemClient()
@@ -189,9 +187,9 @@ async function run(page: puppeteer.Page, config: config.Config) {
         await page.screenshot({ path: path.join(__dirname, imageName) });
         logger.info("screenshot finished, name is %s", imageName)
     
-        checkRoleList = `end`;
+        // checkRoleList = `end`;
 
-        await logoutProcess(page, config)
+        // await logoutProcess(page, config)
 
         console.timeEnd(config.prodName)
 
