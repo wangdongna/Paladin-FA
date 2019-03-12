@@ -6,6 +6,7 @@ metadata:
     app: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
 spec: 
   schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 60
   concurrencyPolicy: "Replace"
   jobTemplate: 
     spec: 

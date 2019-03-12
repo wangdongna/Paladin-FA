@@ -23,7 +23,7 @@ const NODE_ENV = process.env["NODE_ENV"]
 const PROD_CODE_NAME = process.env["PROD_CODE_NAME"]
 
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15") * 1000;
-const CLICK_TIMEOUT = parseInt(process.env["CLICK_TIMEOUT"] || "2") * 1000;
+const CLICK_TIMEOUT = parseInt(process.env["CLICK_TIMEOUT"] || "5") * 1000;
 
 
 let envArgs: Array<string> = ["CLASSIC_OCS_HOST", "CLASSIC_OCS_PORT", "CLASSIC_OCS_USERNAME", "CLASSIC_OCS_PASSWORD", "LOG_LEVEL", "NODE_ENV", "HARDCORE_OSS_ENDPOINT", "OSS_BUCKET_DATA", "COMMON_ALIYUN_ACCESS_SECRET", "COMMON_ALIYUN_ACCESS_ID"]
