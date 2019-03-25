@@ -1,16 +1,16 @@
 apiVersion: batch/v1beta1
-kind: CronJob 
-metadata: 
+kind: CronJob
+metadata:
   name: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
   labels:
     app: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
-spec: 
+spec:
   schedule: "*/1 * * * *"
   successfulJobsHistoryLimit: 60
   concurrencyPolicy: "Replace"
-  jobTemplate: 
-    spec: 
-      template: 
+  jobTemplate:
+    spec:
+      template:
         spec:
           containers:
           - env:
@@ -58,6 +58,12 @@ spec:
               value: "${PALADIN_ITA_USERNAME}"
             - name: PALADIN_ITA_PASSWORD
               value: "${PALADIN_ITA_PASSWORD}"
+            - name: PALADIN_DE_MAIN_URI
+              value: "${PALADIN_DE_MAIN_URI}"
+            - name: PALADIN_DE_USERNAME
+              value: "${PALADIN_DE_USERNAME}"
+            - name: PALADIN_DE_PASSWORD
+              value: "${PALADIN_DE_PASSWORD}"
             - name: PALADIN_METAL_HOST
               value: "${PALADIN_METAL_HOST}"
             - name: PALADIN_ALERT_EMAIL
@@ -73,7 +79,7 @@ spec:
             - name: CLASSIC_OCS_PASSWORD
               value: "${CLASSIC_OCS_PASSWORD}"
             image: {{ image_name }}
-            imagePullPolicy: Always 
+            imagePullPolicy: Always
             name: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
           dnsPolicy: "None"
           dnsConfig:
@@ -85,7 +91,7 @@ spec:
             options:
               - name: ndots
                 value: "2"
-              - name: use-vc 
+              - name: use-vc
           imagePullSecrets:
           - name: default-secret
           restartPolicy: OnFailure
