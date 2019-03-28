@@ -8,6 +8,7 @@ import logConfig from "./logConfig";
 import * as fs from "fs";
 import * as OSS from "ali-oss"
 import notification from "./notification";
+import pushGateway from "./pushGateway"
 
 const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG"
 
@@ -91,7 +92,6 @@ const memClient = createMemClient()
 let checkRoleList = ""
 
 async function run(page: puppeteer.Page, config: config.Config) {
-    console.time(config.prodName)
     checkRoleList = `${config.codeName}-ui`;
     let response = await page.goto(config.mainUri)
     // quote from official website
@@ -190,11 +190,6 @@ async function run(page: puppeteer.Page, config: config.Config) {
                 await page.screenshot({ path: path.join(__dirname, imageName) });
                 logger.info("screenshot finished, name is %s", imageName)
 
-                // checkRoleList = `end`;
-
-                // await logoutProcess(page, config)
-
-                console.timeEnd(config.prodName)
 
                 resolve()
             }
@@ -205,38 +200,6 @@ async function run(page: puppeteer.Page, config: config.Config) {
         })
     })
 
-
-}
-
-async function logoutProcess(page: puppeteer.Page, config: config.Config) {
-    await page.click(config.spMgmtClass) //enter manage
-    logger.info("enter management page success");
-
-    await page.waitForSelector(config.userClass, timeoutOption) //wait for page
-    logger.info("sidebar appear success");
-
-    await page.click(config.userClass) //click user
-    logger.info("sidebar user clicked");
-
-    await page.waitForSelector(".sidebar-bottom-action", timeoutOption) //wait for sidebar
-    logger.info("logout appear success");
-
-    await page.click(".sidebar-bottom-action>button") //click logout
-    logger.info("logout clicked");
-
-    await page.waitForSelector(".dialog-actions", timeoutOption) //wait for dialog
-    logger.info("logout double confirmed shown");
-
-    await page.click(".dialog-actions>button")
-    logger.info("confirm click logout button");
-
-    await page.waitForSelector(config.loginButtonClass) //logout not critical path, could wait longer
-    logger.info("logout success")
-
-
-    let imageName = getImageName("logout-success")
-    await page.screenshot({ path: path.join(__dirname, imageName) });
-    logger.info("screenshot finished, name is %s", imageName)
 
 }
 
@@ -289,14 +252,21 @@ async function start() {
         checkRoleList = ""
         const page = await createPage(browser)
         logger.info("page created for: %s", config1.prodName)
+        let startTime: any = new Date()
         try {
             await run(page, config1);
             await page.close()
+            let endTime: any = new Date()
+            let duration: any = (endTime - startTime) / 1000
+            pushGateway(config1.prodAlias, 0, duration)
             notification.success(config1.prodName)
         }
         catch (error) {
             logger.error(error)
             logger.error(page.url())
+            let endTime: any = new Date()
+            let duration: any = (endTime - startTime) / 1000
+            pushGateway(config1.prodAlias, 1, duration)
             let errorFileName = getImageName("error")
             await page.screenshot({ path: path.join(__dirname, errorFileName) });
             await page.close()

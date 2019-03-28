@@ -1,8 +1,9 @@
-import notificaiton from "../src/notification"
+import notification from "../src/notification"
 import * as OSS from "ali-oss"
-import {configure, getLogger } from "log4js";
+import { configure, getLogger } from "log4js";
 import logConfig from "../src/logConfig";
 import * as moment from "moment"
+import pushGateway from "../src/pushGateway"
 
 const LOG_LEVEL = "DEBUG"
 
@@ -22,11 +23,11 @@ logger.debug("bucket:%s", bucket)
 
 
 const ossClient = new OSS({
-  endpoint,
-  accessKeyId,
-  accessKeySecret,
-  bucket,
-  internal: false
+    endpoint,
+    accessKeyId,
+    accessKeySecret,
+    bucket,
+    internal: false
 });
 
 // (async () => await notificaiton.syncLastStatus(ossClient))()
@@ -38,3 +39,5 @@ let nowTime = now.unix()
 
 logger.debug(nowTime - lastTime)
 // logger.debug(moment(moment().toJSON()).unix())
+
+pushGateway("FA", 0, 5.6)
