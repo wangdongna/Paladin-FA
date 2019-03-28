@@ -32,6 +32,7 @@ const PALADIN_DE_PASSWORD = process.env["PALADIN_DE_PASSWORD"]
 
 export interface Config {
     prodName: string
+    prodAlias: string
     codeName: string
     mainUri: string
     username: string
@@ -45,6 +46,7 @@ export interface Config {
 export const configList: Array<Config> = [
     {
         prodName: "云能效",
+        prodAlias: "EA",
         codeName: "jazz",
         mainUri: PALADIN_EA_MAINURI,
         username: PALADIN_EA_USERNAME,
@@ -56,6 +58,7 @@ export const configList: Array<Config> = [
     {
         prodName: "千里眼",
         codeName: "pop",
+        prodAlias: "FA",
         mainUri: PALADIN_FA_MAINURI,
         username: PALADIN_FA_USERNAME,
         password: PALADIN_FA_PASSWORD,
@@ -66,6 +69,7 @@ export const configList: Array<Config> = [
     {
         prodName: "机器顾问",
         codeName: "hiphop",
+        prodAlias: "MA",
         mainUri: PALADIN_MA_MAINURI,
         username: PALADIN_MA_USERNAME,
         password: PALADIN_MA_PASSWORD,
@@ -75,6 +79,7 @@ export const configList: Array<Config> = [
     },
     {
         prodName: "变频顾问",
+        prodAlias: "DA",
         codeName: "funk",
         mainUri: PALADIN_DA_MAINURI,
         username: PALADIN_DA_USERNAME,
@@ -85,6 +90,7 @@ export const configList: Array<Config> = [
     },
     {
         prodName: "信息顾问",
+        prodAlias: "ITA"
         codeName: "electronic",
         mainUri: PALADIN_ITA_MAINURI,
         username: PALADIN_ITA_USERNAME,
@@ -95,6 +101,7 @@ export const configList: Array<Config> = [
     },
     {
         prodName: "DataEye",
+        prodAlias: "DE",
         codeName: "polka",
         mainUri: PALADIN_DE_MAINURI,
         username: PALADIN_DE_USERNAME,

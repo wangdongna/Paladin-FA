@@ -64,6 +64,8 @@ spec:
               value: "${PALADIN_DE_USERNAME}"
             - name: PALADIN_DE_PASSWORD
               value: "${PALADIN_DE_PASSWORD}"
+            - name: PUSH_GATEWAY_URI
+              value: "${PUSH_GATEWAY_URI}"
             - name: PALADIN_METAL_HOST
               value: "${PALADIN_METAL_HOST}"
             - name: PALADIN_ALERT_EMAIL

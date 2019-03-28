@@ -25,6 +25,7 @@
     "log4js": "^3.0.6",
     "memjs": "^1.2.0",
     "moment": "^2.23.0",
+    "prom-client": "^11.2.1",
     "puppeteer": "^1.11.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
