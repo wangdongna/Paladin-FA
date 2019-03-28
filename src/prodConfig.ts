@@ -90,7 +90,7 @@ export const configList: Array<Config> = [
     },
     {
         prodName: "信息顾问",
-        prodAlias: "ITA"
+        prodAlias: "ITA",
         codeName: "electronic",
         mainUri: PALADIN_ITA_MAINURI,
         username: PALADIN_ITA_USERNAME,
