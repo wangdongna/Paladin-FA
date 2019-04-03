@@ -8,7 +8,7 @@ import logConfig from "./logConfig";
 import * as fs from "fs";
 import * as OSS from "ali-oss"
 import notification from "./notification";
-import pushGateway from "./pushGateway"
+import { pushDuration, pushStatus } from "./pushGateway"
 
 const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG"
 
@@ -90,9 +90,14 @@ const timeoutOption = { timeout: CLICK_TIMEOUT }
 const memClient = createMemClient()
 
 let checkRoleList = ""
+let lastAction = ""
+let currentPhase = ""
 
 async function run(page: puppeteer.Page, config: config.Config) {
     checkRoleList = `${config.codeName}-ui`;
+    let startTime: any = new Date()
+    let endTime: any = new Date()
+    let duration: number = 0
     let response = await page.goto(config.mainUri)
     // quote from official website
     // page.goto either throw or return a main resource response.
@@ -108,13 +113,16 @@ async function run(page: puppeteer.Page, config: config.Config) {
         }
     }
 
-
+    lastAction = "mainpage"
     if (config.codeName !== "polka") {
         let loginButton = await page.waitForSelector(config.loginButtonClass, timeoutOption)
         if (loginButton) {
             logger.info("login button shown")
             let imageName = getImageName("mainpage");
             await page.screenshot({ path: path.join(__dirname, imageName) });
+            endTime = new Date()
+            duration = (endTime - startTime) / 1000
+            pushDuration(config.prodAlias, duration, "mainpage_success")
         }
         else {
             logger.info("login button not shown, url is: %s", page.url())
@@ -122,6 +130,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
         }
 
         checkRoleList = `guard-ui,guard,classic`;
+        startTime = new Date()
         let responses = await Promise.all([
             await page.click(config.loginButtonClass),
             await page.waitForNavigation(navigationOption),
@@ -138,10 +147,13 @@ async function run(page: puppeteer.Page, config: config.Config) {
         await page.waitForNavigation(navigationOption)
     }
     logger.info("entering sso page")
-
+    lastAction = "sso"
     const veriCodeRes = await page.waitForResponse(
         response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200);
     logger.info("veri code got it")
+    endTime = new Date()
+    duration = (endTime - startTime) / 1000
+    pushDuration(config.prodAlias, duration, "sso_success")
 
     let imageName = getImageName("sso");
     await page.screenshot({ path: path.join(__dirname, imageName) });
@@ -160,6 +172,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
                 await page.type("input[placeholder=请输入密码]", config.password)
                 await page.type("input[placeholder=请输入图中算式结果]", result)
 
+                lastAction = "sso-filled-in"
                 let imageName = getImageName("sso-filled-in");
                 await page.screenshot({ path: path.join(__dirname, imageName) });
                 logger.info("screenshot finished, name is %s", imageName)
@@ -167,6 +180,8 @@ async function run(page: puppeteer.Page, config: config.Config) {
 
                 let buttons = await page.$$(".pop-login-form-content-button button")
                 checkRoleList = `${config.codeName}-webapi,${config.codeName}-app`;
+                lastAction = "login-success"
+                startTime = new Date()
                 let responses = await Promise.all([
                     await buttons[1].click(),
                     await page.waitForNavigation(navigationOption),
@@ -184,7 +199,9 @@ async function run(page: puppeteer.Page, config: config.Config) {
                 await page.waitForSelector(config.spMgmtClass, timeoutOption)
                 // await page.waitFor(10 * 1000); //wait for 10 seconds
                 logger.info("login success")
-
+                endTime = new Date()
+                duration = endTime - startTime
+                pushDuration(config.prodAlias, duration, "login_success")
 
                 imageName = getImageName("login-success");
                 await page.screenshot({ path: path.join(__dirname, imageName) });
@@ -258,16 +275,15 @@ async function start() {
             await page.close()
             let endTime: any = new Date()
             let duration: any = (endTime - startTime) / 1000
-            pushGateway(config1.prodAlias, 0, duration)
+            pushStatus(config1.prodAlias, 0)
+            pushDuration(config1.prodAlias, duration, "full")
             notification.success(config1.prodName)
         }
         catch (error) {
             logger.error(error)
             logger.error(page.url())
-            let endTime: any = new Date()
-            let duration: any = (endTime - startTime) / 1000
-            pushGateway(config1.prodAlias, 1, duration)
-            let errorFileName = getImageName("error")
+            pushStatus(config1.prodAlias, 1)
+            let errorFileName = getImageName(`error-before-${lastAction}`)
             await page.screenshot({ path: path.join(__dirname, errorFileName) });
             await page.close()
             notification.error(config1.prodName, error, checkRoleList)
