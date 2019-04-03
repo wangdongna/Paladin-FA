@@ -3,7 +3,7 @@ import * as OSS from "ali-oss"
 import { configure, getLogger } from "log4js";
 import logConfig from "../src/logConfig";
 import * as moment from "moment"
-import pushGateway from "../src/pushGateway"
+import { pushDuration, pushStatus } from "../src/pushGateway"
 
 const LOG_LEVEL = "DEBUG"
 
@@ -40,4 +40,4 @@ let nowTime = now.unix()
 logger.debug(nowTime - lastTime)
 // logger.debug(moment(moment().toJSON()).unix())
 
-pushGateway("FA", 0, 5.6)
+//pushGateway("FA", 0, 5.6)
