@@ -97,3 +97,5 @@ spec:
           imagePullSecrets:
           - name: default-secret
           restartPolicy: OnFailure
+          nodeSelector:
+            envnode: ${ENV_NODE_LABEL}
