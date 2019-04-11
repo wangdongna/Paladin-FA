@@ -34,7 +34,7 @@ export const pushStatus = (prodInfo: string, val: number) => {
   try {
     const livenessGauge = new promClient.Gauge({ name: "login_status", help: "check status of login, 0 is success, 1 is failure" });
     livenessGauge.set(val);
-    gateway.pushAdd({ jobName: "paladin", groupings: { prod: prodInfo } }, (err, response, body) => {
+    gateway.pushAdd({ jobName: "paladin", groupings: { prod: prodInfo, phase: "full" } }, (err, response, body) => {
       if (err) {
         logger.error("push gateway push error: %j", err)
       }
