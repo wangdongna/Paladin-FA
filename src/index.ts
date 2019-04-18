@@ -149,7 +149,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
   logger.info("entering sso page")
   lastAction = "sso"
   const veriCodeRes = await page.waitForResponse(
-    response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200);
+    response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200 && response.request().method() !== "OPTIONS");
   logger.info("veri code got it")
   endTime = new Date()
   duration = (endTime - startTime) / 1000
