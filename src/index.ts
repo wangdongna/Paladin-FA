@@ -275,13 +275,15 @@ async function start() {
       await page.close()
       let endTime: any = new Date()
       let duration: any = (endTime - startTime) / 1000
-      pushStatus(config1.prodAlias, 0)
       pushDuration(config1.prodAlias, duration, "full")
+      //pushStatus must be last one be called
+      pushStatus(config1.prodAlias, 0)
       notification.success(config1.prodName)
     }
     catch (error) {
       logger.error(error)
       logger.error(page.url())
+      //pushstatus must be last one be called
       pushStatus(config1.prodAlias, 1)
       let errorFileName = getImageName(`error-before-${lastAction}`)
       await page.screenshot({ path: path.join(__dirname, errorFileName) });
