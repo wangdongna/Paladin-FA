@@ -32,9 +32,9 @@ const ossClient = new OSS({
 
 // (async () => await notificaiton.syncLastStatus(ossClient))()
 
-let now = new Date()
+let now: any = new Date()
 logger.debug("now:%s", now.toJSON())
-let lastTime = new Date(Date.parse("2019-04-30T05:55:16.137Z"))
+let lastTime: any = new Date(Date.parse("2019-04-30T05:55:16.137Z"))
 logger.debug("last time: %s", lastTime.toJSON())
 let nowTime = now
 
