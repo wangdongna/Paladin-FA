@@ -200,7 +200,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
         // await page.waitFor(10 * 1000); //wait for 10 seconds
         logger.info("login success")
         endTime = new Date()
-        duration = endTime - startTime
+        duration = (endTime - startTime) / 1000
         pushDuration(config.prodAlias, duration, "login_success")
 
         imageName = getImageName("login-success");

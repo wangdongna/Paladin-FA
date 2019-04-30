@@ -23,21 +23,22 @@ logger.debug("bucket:%s", bucket)
 
 
 const ossClient = new OSS({
-    endpoint,
-    accessKeyId,
-    accessKeySecret,
-    bucket,
-    internal: false
+  endpoint,
+  accessKeyId,
+  accessKeySecret,
+  bucket,
+  internal: false
 });
 
 // (async () => await notificaiton.syncLastStatus(ossClient))()
 
-let now = moment().utcOffset(8);
+let now = new Date()
 logger.debug("now:%s", now.toJSON())
-let lastTime = moment("2019-03-02T10:24:11.157Z").utcOffset(8).unix()
-let nowTime = now.unix()
+let lastTime = new Date(Date.parse("2019-04-30T05:55:16.137Z"))
+logger.debug("last time: %s", lastTime.toJSON())
+let nowTime = now
 
-logger.debug(nowTime - lastTime)
+logger.debug((nowTime - lastTime) / 1000)
 // logger.debug(moment(moment().toJSON()).unix())
 
 //pushGateway("FA", 0, 5.6)
