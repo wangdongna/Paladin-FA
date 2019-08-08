@@ -98,24 +98,23 @@ async function run(page: puppeteer.Page, config: config.Config) {
   let startTime: any = new Date()
   let endTime: any = new Date()
   let duration: number = 0
+  let response = await page.goto(config.mainUri)
+  // quote from official website
+  // page.goto either throw or return a main resource response.
+  // The only exceptions are navigation to about:blank or navigation to the
+  // same URL with a different hash, which would succeed and return null
+  if (response) {
+    if (response.status() === 200) {
+      logger.info("enter page: %s", response.url())
+    }
+    else {
+      logger.error("fail to enter page: %s", config.mainUri)
+      throw new Error(`enter page failed: ${response.url()}`)
+    }
+  }
 
   lastAction = "mainpage"
   if (config.codeName !== "polka") {
-    let response = await page.goto(config.mainUri)
-    // quote from official website
-    // page.goto either throw or return a main resource response.
-    // The only exceptions are navigation to about:blank or navigation to the
-    // same URL with a different hash, which would succeed and return null
-    if (response) {
-      if (response.status() === 200) {
-        logger.info("enter page: %s", response.url())
-      }
-      else {
-        logger.error("fail to enter page: %s", config.mainUri)
-        throw new Error(`enter page failed: ${response.url()}`)
-      }
-    }
-
     let loginButton = await page.waitForSelector(config.loginButtonClass, timeoutOption)
     if (loginButton) {
       logger.info("login button shown")
@@ -144,7 +143,6 @@ async function run(page: puppeteer.Page, config: config.Config) {
     })
   }
   else {
-    await page.goto(config.mainUri)
     checkRoleList = `guard-ui,guard,classic`;
     await page.waitForNavigation(navigationOption)
   }
