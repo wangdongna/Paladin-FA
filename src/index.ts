@@ -9,6 +9,7 @@ import * as fs from "fs";
 import * as OSS from "ali-oss"
 import notification from "./notification";
 import { pushDuration, pushStatus } from "./pushGateway"
+import { getValidationCode } from "./util"
 
 const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG"
 
@@ -27,7 +28,7 @@ const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15") * 1000;
 const CLICK_TIMEOUT = parseInt(process.env["CLICK_TIMEOUT"] || "5") * 1000;
 
 
-let envArgs: Array<string> = ["CLASSIC_OCS_HOST", "CLASSIC_OCS_PORT", "CLASSIC_OCS_USERNAME", "CLASSIC_OCS_PASSWORD", "LOG_LEVEL", "NODE_ENV", "HARDCORE_OSS_ENDPOINT", "OSS_BUCKET_DATA", "COMMON_ALIYUN_ACCESS_SECRET", "COMMON_ALIYUN_ACCESS_ID"]
+let envArgs: Array<string> = ["TROJAN_HOST", "LOG_LEVEL", "NODE_ENV", "HARDCORE_OSS_ENDPOINT", "OSS_BUCKET_DATA", "COMMON_ALIYUN_ACCESS_SECRET", "COMMON_ALIYUN_ACCESS_ID"]
 
 envArgs.forEach((item: string) => {
   let ret = false;
@@ -71,14 +72,6 @@ async function createPage(browser: puppeteer.Browser) {
   return page;
 }
 
-function createMemClient() {
-  const connStr = `${process.env["CLASSIC_OCS_USERNAME"]}:${process.env["CLASSIC_OCS_PASSWORD"]}@${process.env["CLASSIC_OCS_HOST"]}:${process.env["CLASSIC_OCS_PORT"]}`
-  logger.info("memcache client connection string : %s", connStr)
-  const memClient = memjs.Client.create(connStr)
-  logger.info("memcache client created")
-  return memClient;
-}
-
 function getImageName(key: string) {
   return `${key}-${moment().utcOffset(8).format("YYYY-MM-DD HH:mm:DD")}.png`
 }
@@ -86,8 +79,6 @@ function getImageName(key: string) {
 
 const navigationOption: puppeteer.NavigationOptions = { waitUntil: ["domcontentloaded"] }
 const timeoutOption = { timeout: CLICK_TIMEOUT }
-
-const memClient = createMemClient()
 
 let checkRoleList = ""
 let lastAction = ""
@@ -163,10 +154,12 @@ async function run(page: puppeteer.Page, config: config.Config) {
   logger.debug(`vericode id is ${Id}`)
 
   await new Promise((resolve, reject) => {
-    memClient.get(Id, async (err, val) => {
+    getValidationCode(Id, async (val) => {
       try {
-        const result = val.toString("utf8");
+        const result = val
         logger.debug("veri code value is", result)
+
+        if (!result) throw new Error("validtion code is empty")
 
         await page.type("input[placeholder=请输入用户名]", config.username)
         await page.type("input[placeholder=请输入密码]", config.password)
