@@ -7,7 +7,9 @@ const TROJAN_HOST = process.env["TROJAN_HOST"]
 
 
 export function getValidationCode(id: string, callback: (code: string) => Promise<void>) {
-  request(`${TROJAN_HOST}/validationCode/${id}`, (error, response, body) => {
+  let uri = `${TROJAN_HOST}/validationCode/${id}`
+  logger.info("trojan uri is %s", uri)
+  request.get(uri, (error, response, body) => {
     if (error) {
       logger.error('error:', error)
       callback("")
