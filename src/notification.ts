@@ -88,10 +88,40 @@ function sendSMS(prodInfo: string, info: string, delay: number = 0) {
   })
 }
 
+function sendToOps(prodInfo: string, error: string) {
+  let time = moment().utcOffset(8).format("YYYY-MM-DD HH:mm:ss")
+  request({
+    uri: metalHost,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+      token: "NN4xxKit2vA2s3BXVx8UdHY8meVJobOH",
+      prod: prodInfo,
+      status: error,
+      time: time
+    })
+  }, (err, response, body) => {
+    if (err) {
+      logger.error(err);
+    }
+    logger.debug(body)
+    logger.info("sent to ops: %s", prodInfo)
+  })
+}
+
 
 function sendNotification(prodInfo: string, error: string) {
-  sendEmail(`${prodInfo}${error}`, error)
-  sendSMS(prodInfo, error)
+  if (metalHost.indexOf("paladin") >= 0) {
+    sendToOps(prodInfo, error)
+  }
+  else {
+    sendEmail(`${prodInfo}${error}`, error)
+    sendSMS(prodInfo, error)
+  }
+
 }
 
 
