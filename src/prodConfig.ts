@@ -39,7 +39,6 @@ export interface Config {
   password: string
   loginButtonClass: string
   spMgmtClass: string
-  userClass: string
 }
 
 
@@ -52,8 +51,7 @@ export const configList: Array<Config> = [
     username: PALADIN_EA_USERNAME,
     password: PALADIN_EA_PASSWORD,
     loginButtonClass: ".login-button",
-    spMgmtClass: ".jazz-select-customer-sp-manage",
-    userClass: ".jazz-mainmenu-user>a"
+    spMgmtClass: "header.jazz-select-customer-header span.step"
   },
   {
     prodName: "千里眼",
@@ -63,8 +61,7 @@ export const configList: Array<Config> = [
     username: PALADIN_FA_USERNAME,
     password: PALADIN_FA_PASSWORD,
     loginButtonClass: ".login",
-    spMgmtClass: ".sp-manage",
-    userClass: ".pop-mainmenu-user>button"
+    spMgmtClass: "header.select-customer-header span.title"
   },
   {
     prodName: "机器顾问",
@@ -73,9 +70,8 @@ export const configList: Array<Config> = [
     mainUri: PALADIN_MA_MAINURI,
     username: PALADIN_MA_USERNAME,
     password: PALADIN_MA_PASSWORD,
-    loginButtonClass: ".login",
-    spMgmtClass: ".pop-select-sp-manage",
-    userClass: ".pop-mainmenu-user>button"
+    loginButtonClass: ".login-btn",
+    spMgmtClass: "div.pop-select-customer-header > span"
   },
   {
     prodName: "变频顾问",
@@ -85,8 +81,7 @@ export const configList: Array<Config> = [
     username: PALADIN_DA_USERNAME,
     password: PALADIN_DA_PASSWORD,
     loginButtonClass: ".login",
-    spMgmtClass: ".pop-select-sp-manage",
-    userClass: ".pop-mainmenu-user>button"
+    spMgmtClass: "div.pop-minSize > span"
   },
   {
     prodName: "信息顾问",
@@ -96,8 +91,7 @@ export const configList: Array<Config> = [
     username: PALADIN_ITA_USERNAME,
     password: PALADIN_ITA_PASSWORD,
     loginButtonClass: ".login",
-    spMgmtClass: ".pop-select-sp-manage",
-    userClass: ".pop-mainmenu-user>button"
+    spMgmtClass: "div.pop-minSize > span"
   },
   {
     prodName: "DataEye",
@@ -107,7 +101,6 @@ export const configList: Array<Config> = [
     username: PALADIN_DE_USERNAME,
     password: PALADIN_DE_PASSWORD,
     loginButtonClass: ".login",
-    spMgmtClass: ".select-customer-header",
-    userClass: ".pop-mainmenu-user>button"
+    spMgmtClass: "header.select-customer-header span.step"
   }
 ]
