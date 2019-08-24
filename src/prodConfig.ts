@@ -71,7 +71,7 @@ export const configList: Array<Config> = [
     username: PALADIN_MA_USERNAME,
     password: PALADIN_MA_PASSWORD,
     loginButtonClass: ".login-btn",
-    spMgmtClass: "div.pop-select-customer-header > span"
+    spMgmtClass: "div.pop - minSize > span"
   },
   {
     prodName: "变频顾问",
