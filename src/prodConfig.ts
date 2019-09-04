@@ -91,7 +91,7 @@ export const configList: Array<Config> = [
     username: PALADIN_ITA_USERNAME,
     password: PALADIN_ITA_PASSWORD,
     loginButtonClass: ".login",
-    spMgmtClass: "div.pop-minSize > span"
+    spMgmtClass: "header.select-customer-header span.title"
   },
   {
     prodName: "DataEye",
