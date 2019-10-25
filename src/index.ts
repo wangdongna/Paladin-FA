@@ -297,7 +297,7 @@ function cleanImage() {
 // uploadAndCleanImage()
 // cleanImage()
 async function getBrowser() {
-  let args = ['--lang=zh-cn', '--disable - dev - shm - usage', '--no - sandbox', '--disable - setuid - sandbox']
+  let args = ['--lang=zh-cn', '--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox']
   logger.debug("SE_PROXY: %s", process.env["SE_PROXY"])
   if (process.env["SE_PROXY"] === "1") {
     args.push('--proxy-server=101.231.121.17:80')
