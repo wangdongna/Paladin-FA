@@ -21,89 +21,90 @@ spec:
         app: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
     spec:
       containers:
-        - env:
-          - name: NODE_ENV
-            value: "production"
-          - name: PROD_CODE_NAME
-            value: "{{ PROD_CODE_NAME }}"
-          - name: LOG_LEVEL
-            value: "INFO"
-          - name: OSS_BUCKET_DATA
-            value: "${OSS_BUCKET_DATA}"
-          - name: COMMON_ALIYUN_ACCESS_ID
-            value: "${COMMON_ALIYUN_ACCESS_ID}"
-          - name: COMMON_ALIYUN_ACCESS_SECRET
-            value: "${COMMON_ALIYUN_ACCESS_SECRET}"
-          - name: HARDCORE_OSS_ENDPOINT
-            value: "${HARDCORE_OSS_ENDPOINT}"
-          - name: PALADIN_EA_MAIN_URI
-            value: "${PALADIN_EA_MAIN_URI}"
-          - name: PALADIN_EA_USERNAME
-            value: "${PALADIN_EA_USERNAME}"
-          - name: PALADIN_EA_PASSWORD
-            value: "${PALADIN_EA_PASSWORD}"
-          - name: PALADIN_FA_MAIN_URI
-            value: "${PALADIN_FA_MAIN_URI}"
-          - name: PALADIN_FA_USERNAME
-            value: "${PALADIN_FA_USERNAME}"
-          - name: PALADIN_FA_PASSWORD
-            value: "${PALADIN_FA_PASSWORD}"
-          - name: PALADIN_MA_MAIN_URI
-            value: "${PALADIN_MA_MAIN_URI}"
-          - name: PALADIN_MA_USERNAME
-            value: "${PALADIN_MA_USERNAME}"
-          - name: PALADIN_MA_PASSWORD
-            value: "${PALADIN_MA_PASSWORD}"
-          - name: PALADIN_DA_MAIN_URI
-            value: "${PALADIN_DA_MAIN_URI}"
-          - name: PALADIN_DA_USERNAME
-            value: "${PALADIN_DA_USERNAME}"
-          - name: PALADIN_DA_PASSWORD
-            value: "${PALADIN_DA_PASSWORD}"
-          - name: PALADIN_ITA_MAIN_URI
-            value: "${PALADIN_ITA_MAIN_URI}"
-          - name: PALADIN_ITA_USERNAME
-            value: "${PALADIN_ITA_USERNAME}"
-          - name: PALADIN_ITA_PASSWORD
-            value: "${PALADIN_ITA_PASSWORD}"
-          - name: PALADIN_DE_MAIN_URI
-            value: "${PALADIN_DE_MAIN_URI}"
-          - name: PALADIN_DE_USERNAME
-            value: "${PALADIN_DE_USERNAME}"
-          - name: PALADIN_DE_PASSWORD
-            value: "${PALADIN_DE_PASSWORD}"
-          - name: PALADIN_METAL_HOST
-            value: "${PALADIN_METAL_HOST}"
-          - name: PALADIN_ALERT_EMAIL
-            value: "${PALADIN_ALERT_EMAIL}"
-          - name: PALADIN_ALERT_PHONE
-            value: "${PALADIN_ALERT_PHONE}"
-          - name: TROJAN_HOST
-            value: "${TROJAN_HOST}"
-          image: {{ image_name }}
-          imagePullPolicy: Always
-          name: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 3000
-            initialDelaySeconds: 5
-            periodSeconds: 5
-        dnsPolicy: "None"
-        dnsConfig:
-          nameservers:
-            - ${DNS_HOST_1}
-            - ${DNS_HOST_2}
-          searches:
-            - ${DNS_SEARCH_DOMAIN_NAME}
-          options:
-            - name: ndots
-              value: "2"
-            - name: use-vc
-        imagePullSecrets:
-        - name: default-secret
-        nodeSelector:
-          envnode: ${ENV_NODE_LABEL}
+      - env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PROD_CODE_NAME
+          value: "{{ PROD_CODE_NAME }}"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: OSS_BUCKET_DATA
+          value: "${OSS_BUCKET_DATA}"
+        - name: COMMON_ALIYUN_ACCESS_ID
+          value: "${COMMON_ALIYUN_ACCESS_ID}"
+        - name: COMMON_ALIYUN_ACCESS_SECRET
+          value: "${COMMON_ALIYUN_ACCESS_SECRET}"
+        - name: HARDCORE_OSS_ENDPOINT
+          value: "${HARDCORE_OSS_ENDPOINT}"
+        - name: PALADIN_EA_MAIN_URI
+          value: "${PALADIN_EA_MAIN_URI}"
+        - name: PALADIN_EA_USERNAME
+          value: "${PALADIN_EA_USERNAME}"
+        - name: PALADIN_EA_PASSWORD
+          value: "${PALADIN_EA_PASSWORD}"
+        - name: PALADIN_FA_MAIN_URI
+          value: "${PALADIN_FA_MAIN_URI}"
+        - name: PALADIN_FA_USERNAME
+          value: "${PALADIN_FA_USERNAME}"
+        - name: PALADIN_FA_PASSWORD
+          value: "${PALADIN_FA_PASSWORD}"
+        - name: PALADIN_MA_MAIN_URI
+          value: "${PALADIN_MA_MAIN_URI}"
+        - name: PALADIN_MA_USERNAME
+          value: "${PALADIN_MA_USERNAME}"
+        - name: PALADIN_MA_PASSWORD
+          value: "${PALADIN_MA_PASSWORD}"
+        - name: PALADIN_DA_MAIN_URI
+          value: "${PALADIN_DA_MAIN_URI}"
+        - name: PALADIN_DA_USERNAME
+          value: "${PALADIN_DA_USERNAME}"
+        - name: PALADIN_DA_PASSWORD
+          value: "${PALADIN_DA_PASSWORD}"
+        - name: PALADIN_ITA_MAIN_URI
+          value: "${PALADIN_ITA_MAIN_URI}"
+        - name: PALADIN_ITA_USERNAME
+          value: "${PALADIN_ITA_USERNAME}"
+        - name: PALADIN_ITA_PASSWORD
+          value: "${PALADIN_ITA_PASSWORD}"
+        - name: PALADIN_DE_MAIN_URI
+          value: "${PALADIN_DE_MAIN_URI}"
+        - name: PALADIN_DE_USERNAME
+          value: "${PALADIN_DE_USERNAME}"
+        - name: PALADIN_DE_PASSWORD
+          value: "${PALADIN_DE_PASSWORD}"
+        - name: PALADIN_METAL_HOST
+          value: "${PALADIN_METAL_HOST}"
+        - name: PALADIN_ALERT_EMAIL
+          value: "${PALADIN_ALERT_EMAIL}"
+        - name: PALADIN_ALERT_PHONE
+          value: "${PALADIN_ALERT_PHONE}"
+        - name: TROJAN_HOST
+          value: "${TROJAN_HOST}"
+        image: {{ image_name }}
+        imagePullPolicy: Always
+        name: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 15
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - ${DNS_HOST_1}
+          - ${DNS_HOST_2}
+        searches:
+          - ${DNS_SEARCH_DOMAIN_NAME}
+        options:
+          - name: ndots
+            value: "2"
+          - name: use-vc
+      imagePullSecrets:
+      - name: default-secret
+      nodeSelector:
+        envnode: ${ENV_NODE_LABEL}
+
 ---
 apiVersion: v1
 kind: Service
