@@ -1,15 +1,17 @@
-import * as config from './prodConfig';
-import * as puppeteer from "puppeteer"
-import * as moment from "moment"
-import * as path from "path"
-import * as memjs from "memjs"
-import { configure, getLogger } from "log4js";
-import logConfig from "./logConfig";
+import * as OSS from "ali-oss";
 import * as fs from "fs";
-import * as OSS from "ali-oss"
+import { configure, getLogger } from "log4js";
+import * as moment from "moment";
+import * as path from "path";
+import * as puppeteer from "puppeteer";
+import logConfig from "./logConfig";
 import notification from "./notification";
-import { pushDuration, pushStatus } from "./pushGateway"
-import { getValidationCode } from "./util"
+import * as config from './prodConfig';
+import { pushDuration, pushStatus, reset } from "./pushGateway";
+import { getValidationCode, isMaintaining } from "./util";
+import * as express from "express"
+import * as promClient from "prom-client"
+import * as bodyParser from "body-parser"
 
 const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG"
 
@@ -45,6 +47,8 @@ envArgs.forEach((item: string) => {
   }
 })
 
+logger.debug("proxy: %s, %s", process.env["HTTP_PROXY"], process.env["HTTPS_PROXY"])
+
 const ossClient = new OSS({
   endpoint,
   accessKeyId,
@@ -52,6 +56,51 @@ const ossClient = new OSS({
   bucket,
   internal: NODE_ENV === "production" ? true : false
 });
+
+const app = express()
+const port = 3000
+const register = promClient.register
+
+
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', register.contentType)
+  res.status(200).send(register.metrics())
+  if (isEnd) {
+    reset()
+  }
+
+})
+
+const collectDefaultMetrics = promClient.collectDefaultMetrics;
+collectDefaultMetrics({ timeout: 60 * 1000, prefix: 'paladin_' });
+
+app.get("/healthz", (req, res) => {
+  logger.info("healthz")
+  res.status(200).send("ok")
+})
+
+app.post("/maintain", (req, res) => {
+  let { maintain } = req.body
+  logger.info("maintaining status change to : %d", maintain)
+  if (maintain === 1) {
+    process.env["IS_MAINTAINING"] = "1"
+    reset()
+  }
+  else {
+    process.env["IS_MAINTAINING"] = "0"
+  }
+  res.status(200).send("ok")
+})
+
+app.listen(port, () => {
+  logger.info(`paladin app listening on port ${port}!`)
+  start()
+  setInterval(start, 2 * 60 * 1000)
+})
+
 
 
 async function createPage(browser: puppeteer.Browser) {
@@ -82,7 +131,6 @@ const timeoutOption = { timeout: CLICK_TIMEOUT }
 
 let checkRoleList = ""
 let lastAction = ""
-let currentPhase = ""
 
 async function run(page: puppeteer.Page, config: config.Config) {
   checkRoleList = `${config.codeName}-ui`;
@@ -248,17 +296,35 @@ function cleanImage() {
 
 // uploadAndCleanImage()
 // cleanImage()
+async function getBrowser() {
+  let args = ['--lang=zh-cn', '--disable - dev - shm - usage', '--no - sandbox', '--disable - setuid - sandbox']
+  logger.debug("SE_PROXY: %s", process.env["SE_PROXY"])
+  if (process.env["SE_PROXY"] === "1") {
+    args.push('--proxy-server=101.231.121.17:80')
+  }
+  const browser = await puppeteer.launch({
+    defaultViewport: {
+      width: 1920,
+      height: 1080
+    },
+    ignoreHTTPSErrors: true,
+    args
+  })
+
+  return browser
+}
+let isEnd = false
 async function start() {
+  if (isMaintaining()) {
+    logger.info("it is maintaining, not start to collect")
+    return
+  }
+  logger.info("started")
+  isEnd = false
   try {
     let config1 = config.configList.find((value) => value.codeName === PROD_CODE_NAME)
     await notification.syncLastStatus(ossClient, config1)
-    const browser = await puppeteer.launch({
-      defaultViewport: {
-        width: 1920,
-        height: 1080
-      },
-      args: ['--lang=zh-cn', '--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox']
-    });
+    const browser = await getBrowser()
     checkRoleList = ""
     const page = await createPage(browser)
     logger.info("page created for: %s", config1.prodName)
@@ -286,18 +352,14 @@ async function start() {
     finally {
       await upload(config1)
       cleanImage()
-      await browser.close();
+      await browser.close()
       logger.info("browser closed")
     }
 
     await notification.pushLastStatus(ossClient, config1)
-    process.exit(0)
+    isEnd = true
 
   } catch (error) {
     logger.fatal("Unknown error: %s", error)
-    process.exit(0)
   }
 }
-
-start();
-logger.info("started")

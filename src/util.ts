@@ -1,5 +1,6 @@
 import { getLogger } from "log4js"
 import * as request from "request"
+import * as rp from "request-promise"
 
 const logger = getLogger("util")
 
@@ -22,4 +23,14 @@ export function getValidationCode(id: string, callback: (code: string) => Promis
       callback(body)
     }
   })
+}
+
+export function isMaintaining() {
+  let status = process.env["IS_MAINTAINING"]
+  if (status === "1") {
+    return true
+  }
+
+  return false
+
 }
