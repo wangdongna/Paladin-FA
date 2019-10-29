@@ -109,10 +109,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    service.beta.kubernetes.io/alicloud-loadbalancer-id: "${PALADIN_{{ LB_CODE }}_LB_ID}"
-    service.beta.kubernetes.io/alicloud-loadbalancer-slb-network-type: "vpc"
-    service.beta.kubernetes.io/alicloud-loadbalancer-force-override-listeners: "false"
   labels:
     app: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
   name: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
@@ -124,4 +120,19 @@ spec:
     port: 80
     protocol: TCP
     targetPort: 3000
-  type: LoadBalancer
+  type: NodePort
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
+spec:
+  rules:
+  - host: f-pl-{{ PROD_CODE_NAME }}.hz.ds.se.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ project }}-{{ role }}-{{ PROD_CODE_NAME }}-{{ env_name }}
+          servicePort: 80
