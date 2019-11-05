@@ -1,0 +1,127 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ project }}-{{ role }}-{{ PROD_NAME }}
+  labels:
+    app: {{ project }}-{{ role }}-{{ PROD_NAME }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ project }}-{{ role }}-{{ PROD_NAME }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {{ project }}-{{ role }}-{{ PROD_NAME }}
+    spec:
+      containers:
+      - env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PROD_NAME
+          value: "{{ PROD_NAME }}"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: OSS_BUCKET_DATA
+          value: "${OSS_BUCKET_DATA}"
+        - name: COMMON_ALIYUN_ACCESS_ID
+          value: "${COMMON_ALIYUN_ACCESS_ID}"
+        - name: COMMON_ALIYUN_ACCESS_SECRET
+          value: "${COMMON_ALIYUN_ACCESS_SECRET}"
+        - name: HARDCORE_OSS_ENDPOINT
+          value: "${HARDCORE_OSS_ENDPOINT}"
+        - name: PALADIN_EA_MAIN_URI
+          value: "${PALADIN_EA_MAIN_URI}"
+        - name: PALADIN_EA_USERNAME
+          value: "${PALADIN_EA_USERNAME}"
+        - name: PALADIN_EA_PASSWORD
+          value: "${PALADIN_EA_PASSWORD}"
+        - name: PALADIN_FA_MAIN_URI
+          value: "${PALADIN_FA_MAIN_URI}"
+        - name: PALADIN_FA_USERNAME
+          value: "${PALADIN_FA_USERNAME}"
+        - name: PALADIN_FA_PASSWORD
+          value: "${PALADIN_FA_PASSWORD}"
+        - name: PALADIN_MA_MAIN_URI
+          value: "${PALADIN_MA_MAIN_URI}"
+        - name: PALADIN_MA_USERNAME
+          value: "${PALADIN_MA_USERNAME}"
+        - name: PALADIN_MA_PASSWORD
+          value: "${PALADIN_MA_PASSWORD}"
+        - name: PALADIN_DA_MAIN_URI
+          value: "${PALADIN_DA_MAIN_URI}"
+        - name: PALADIN_DA_USERNAME
+          value: "${PALADIN_DA_USERNAME}"
+        - name: PALADIN_DA_PASSWORD
+          value: "${PALADIN_DA_PASSWORD}"
+        - name: PALADIN_ITA_MAIN_URI
+          value: "${PALADIN_ITA_MAIN_URI}"
+        - name: PALADIN_ITA_USERNAME
+          value: "${PALADIN_ITA_USERNAME}"
+        - name: PALADIN_ITA_PASSWORD
+          value: "${PALADIN_ITA_PASSWORD}"
+        - name: PALADIN_DE_MAIN_URI
+          value: "${PALADIN_DE_MAIN_URI}"
+        - name: PALADIN_DE_USERNAME
+          value: "${PALADIN_DE_USERNAME}"
+        - name: PALADIN_DE_PASSWORD
+          value: "${PALADIN_DE_PASSWORD}"
+        - name: PALADIN_METAL_HOST
+          value: "${PALADIN_METAL_HOST}"
+        - name: PALADIN_ALERT_EMAIL
+          value: "${PALADIN_ALERT_EMAIL}"
+        - name: PALADIN_ALERT_PHONE
+          value: "${PALADIN_ALERT_PHONE}"
+        - name: TROJAN_HOST
+          value: "${TROJAN_HOST}"
+        image: {{ image_name }}
+        imagePullPolicy: Always
+        name: {{ project }}-{{ role }}-{{ PROD_NAME }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 15
+      imagePullSecrets:
+      - name: default-secret
+      nodeSelector:
+        envnode: ${ENV_NODE_LABEL}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ project }}-{{ role }}-{{ PROD_NAME }}
+  name: {{ project }}-{{ role }}-{{ PROD_NAME }}
+spec:
+  selector:
+    app: {{ project }}-{{ role }}-{{ PROD_NAME }}
+  ports:
+  - name: "80"
+    port: 80
+    protocol: TCP
+    targetPort: 3000
+  type: NodePort
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ project }}-{{ role }}-{{ PROD_NAME }}
+spec:
+  rules:
+  - host: f-pl-{{ PROD_NAME }}.hz.ds.se.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ project }}-{{ role }}-{{ PROD_NAME }}
+          servicePort: 80
