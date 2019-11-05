@@ -24,7 +24,7 @@ const accessKeyId = process.env["COMMON_ALIYUN_ACCESS_ID"]
 const bucket = process.env["OSS_BUCKET_DATA"]
 const NODE_ENV = process.env["NODE_ENV"]
 
-const PROD_CODE_NAME = process.env["PROD_CODE_NAME"]
+const PROD_NAME = process.env["PROD_NAME"]
 
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15") * 1000;
 const CLICK_TIMEOUT = parseInt(process.env["CLICK_TIMEOUT"] || "5") * 1000;
@@ -108,14 +108,24 @@ async function createPage(browser: puppeteer.Browser) {
   // page.setCacheEnabled(false)
   page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36 Paladin")
   page.setDefaultNavigationTimeout(NAV_TIMEOUT)
-  page.on("requestfailed", (request) => {
-    logger.debug("requestfailed: %s", request.url())
-  })
+  page.setRequestInterception(true)
+  // page.on("requestfailed", (request) => {
+  //   logger.debug("requestfailed: %s", request.url())
+  // })
   page.on("response", (response) => {
     if (!response.ok() && response.status() >= 400) {
       logger.debug("response maybe error: %s, %s", response.status(), response.url())
     }
 
+  })
+  page.on("request", req => {
+    let resourceType = req.resourceType()
+    if (resourceType === "image") {
+      req.abort()
+    }
+    else {
+      req.continue()
+    }
   })
 
   return page;
@@ -262,6 +272,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
 }
 
 async function upload(config: config.Config) {
+  return
   logger.info("ready upload images")
   let files = fs.readdirSync(__dirname);
   let date = moment().utcOffset(8)
@@ -296,13 +307,14 @@ function cleanImage() {
 
 // uploadAndCleanImage()
 // cleanImage()
+
 async function getBrowser() {
-  let args = ['--lang=zh-cn', '--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox']
+  let args = ['--lang=zh-cn', '--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-accelerated-2d-canvas']
   logger.debug("SE_PROXY: %s", process.env["SE_PROXY"])
   if (process.env["SE_PROXY"] === "1") {
     args.push('--proxy-server=101.231.121.17:80')
   }
-  const browser = await puppeteer.launch({
+  let browser = await puppeteer.launch({
     defaultViewport: {
       width: 1920,
       height: 1080
@@ -310,6 +322,7 @@ async function getBrowser() {
     ignoreHTTPSErrors: true,
     args
   })
+
 
   return browser
 }
@@ -322,7 +335,7 @@ async function start() {
   logger.info("started")
   isEnd = false
   try {
-    let config1 = config.configList.find((value) => value.codeName === PROD_CODE_NAME)
+    let config1 = config.configList.find((value) => value.prodAlias.toLowerCase() === PROD_NAME)
     await notification.syncLastStatus(ossClient, config1)
     const browser = await getBrowser()
     checkRoleList = ""

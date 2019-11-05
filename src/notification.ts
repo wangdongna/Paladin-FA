@@ -134,6 +134,7 @@ function getStatusFile(prodName: string) {
 
 export default {
   async syncLastStatus(ossClient: OSS, config: Config) {
+    return
     try {
       let result = await ossClient.get(getStatusFile(config.prodName));
       let content = result.content.toString("utf-8")
@@ -149,6 +150,7 @@ export default {
 
   },
   async pushLastStatus(ossClient: OSS, config: Config) {
+    return
     try {
       let content = JSON.stringify(status)
       logger.debug("pushLastStatus content is: %s", content)
@@ -159,6 +161,7 @@ export default {
     }
   },
   error(prodInfo: string, error: string, checkRoleList: string) {
+    return
     let now: any = new Date();
     if (!status[prodInfo]) {
       status[prodInfo] = { counter: 1, sendCounter: 0, time: now.toJSON() }
@@ -182,6 +185,7 @@ export default {
     }
   },
   success(prodInfo: string) {
+    return
     if (status[prodInfo] && status[prodInfo].sendCounter > 0) {
       sendNotification(prodInfo, RECOVER_MSG)
     }
