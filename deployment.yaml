@@ -116,7 +116,6 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: {{ project }}-{{ role }}-{{ PROD_NAME }}
-  namespace: ${NAMESPACE}
 spec:
   rules:
   - host: f-pl-{{ PROD_NAME }}.hz.ds.se.com
