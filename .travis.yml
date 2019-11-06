@@ -7,7 +7,7 @@ services:
 
 node_js:
   - "10"
-  
+
 cache: yarn
 
 env:
@@ -30,6 +30,7 @@ script:
 
 before_deploy:
   - cp deployment.yaml dist/
+  - cp k8s.yaml dist/
   - cd dist
   - echo -n "${PACKAGE_VERSION}" > version.txt
   - zip -r ../${ARTIFACT_NAME} ./
@@ -41,7 +42,7 @@ before_deploy:
   - docker tag $IMAGEID $REMOTE_TAG
   - docker tag $IMAGEID $REMOTE_TAG_LATEST
   - docker image ls
-  
+
 deploy:
   - provider: script
     skip_cleanup: true
