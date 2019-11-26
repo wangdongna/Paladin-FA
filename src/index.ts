@@ -272,7 +272,6 @@ async function run(page: puppeteer.Page, config: config.Config) {
 }
 
 async function upload(config: config.Config) {
-  return
   logger.info("ready upload images")
   let files = fs.readdirSync(__dirname);
   let date = moment().utcOffset(8)
