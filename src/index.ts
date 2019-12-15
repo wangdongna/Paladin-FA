@@ -194,7 +194,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
 
   await screenshot(page, "sso")
 
-  const { Result: { Id } } = await veriCodeRes.json();
+  const { Result: { Id } } = <any>await veriCodeRes.json();
   logger.debug(`vericode id is ${Id}`)
 
   await new Promise((resolve, reject) => {
