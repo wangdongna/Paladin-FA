@@ -1,17 +1,14 @@
-import * as OSS from "ali-oss";
-import * as fs from "fs";
+import * as bodyParser from "body-parser";
+import * as express from "express";
 import { configure, getLogger } from "log4js";
-import * as moment from "moment";
-import * as path from "path";
+import * as promClient from "prom-client";
 import * as puppeteer from "puppeteer";
 import logConfig from "./logConfig";
 import notification from "./notification";
 import * as config from './prodConfig';
 import { pushDuration, pushStatus, reset } from "./pushGateway";
-import { getValidationCode, isMaintaining } from "./util";
-import * as express from "express"
-import * as promClient from "prom-client"
-import * as bodyParser from "body-parser"
+import { cleanImage, getValidationCode, isMaintaining, screenshot, upload, initOssClient } from "./util";
+import checkMainFeatures from "./mainFeatures"
 
 const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG"
 
@@ -22,7 +19,6 @@ const endpoint = process.env["HARDCORE_OSS_ENDPOINT"]
 const accessKeySecret = process.env["COMMON_ALIYUN_ACCESS_SECRET"]
 const accessKeyId = process.env["COMMON_ALIYUN_ACCESS_ID"]
 const bucket = process.env["OSS_BUCKET_DATA"]
-const NODE_ENV = process.env["NODE_ENV"]
 
 const PROD_NAME = process.env["PROD_NAME"]
 
@@ -49,13 +45,10 @@ envArgs.forEach((item: string) => {
 
 logger.debug("proxy: %s, %s", process.env["HTTP_PROXY"], process.env["HTTPS_PROXY"])
 
-const ossClient = new OSS({
-  endpoint,
+initOssClient(endpoint,
   accessKeyId,
   accessKeySecret,
-  bucket,
-  internal: NODE_ENV === "production" ? true : false
-});
+  bucket)
 
 const app = express()
 const port = 3000
@@ -131,10 +124,6 @@ async function createPage(browser: puppeteer.Browser) {
   return page;
 }
 
-function getImageName(key: string) {
-  return `${key}-${moment().utcOffset(8).format("YYYY-MM-DD HH:mm:DD")}.png`
-}
-
 
 const navigationOption: puppeteer.NavigationOptions = { waitUntil: ["domcontentloaded"] }
 const timeoutOption = { timeout: CLICK_TIMEOUT }
@@ -167,8 +156,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
     let loginButton = await page.waitForSelector(config.loginButtonClass, timeoutOption)
     if (loginButton) {
       logger.info("login button shown")
-      let imageName = getImageName("mainpage");
-      await page.screenshot({ path: path.join(__dirname, imageName) });
+      await screenshot(page, "mainpage")
       endTime = new Date()
       duration = (endTime - startTime) / 1000
       pushDuration(config.prodAlias, duration, "mainpage_success")
@@ -204,9 +192,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
   duration = (endTime - startTime) / 1000
   pushDuration(config.prodAlias, duration, "sso_success")
 
-  let imageName = getImageName("sso");
-  await page.screenshot({ path: path.join(__dirname, imageName) });
-  logger.info("screenshot finished, name is %s", imageName)
+  await screenshot(page, "sso")
 
   const { Result: { Id } } = await veriCodeRes.json();
   logger.debug(`vericode id is ${Id}`)
@@ -224,10 +210,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
         await page.type("input[placeholder=请输入图中算式结果]", result)
 
         lastAction = "sso-filled-in"
-        let imageName = getImageName("sso-filled-in");
-        await page.screenshot({ path: path.join(__dirname, imageName) });
-        logger.info("screenshot finished, name is %s", imageName)
-
+        await screenshot(page, "sso-filled-in")
 
         let buttons = await page.$$(".pop-login-form-content-button button")
         checkRoleList = `${config.codeName}-webapi,${config.codeName}-app`;
@@ -254,10 +237,10 @@ async function run(page: puppeteer.Page, config: config.Config) {
         duration = (endTime - startTime) / 1000
         pushDuration(config.prodAlias, duration, "login_success")
 
-        imageName = getImageName("login-success");
-        await page.screenshot({ path: path.join(__dirname, imageName) });
-        logger.info("screenshot finished, name is %s", imageName)
+        await screenshot(page, "login-success")
 
+
+        await checkMainFeatures(config, page)
 
         resolve()
       }
@@ -269,39 +252,6 @@ async function run(page: puppeteer.Page, config: config.Config) {
   })
 
 
-}
-
-async function upload(config: config.Config) {
-  logger.info("ready upload images")
-  let files = fs.readdirSync(__dirname);
-  let date = moment().utcOffset(8)
-  let folder = `paladin/${config.prodName}/${date.format("YYYY")}/${date.format("MM")}/${date.format("DD")}/${date.format("HH")}`;
-  for (let i = 0; i < files.length; ++i) {
-    let item = files[i];
-    let fileName = `${folder}/${item}`;
-    if (item.endsWith(".png")) {
-      logger.debug("ready put item: ", fileName)
-      let ret = await ossClient.put(fileName, path.join(__dirname, item))
-      logger.info("file %s is uploaded", ret.name)
-    }
-  }
-}
-
-function cleanImage() {
-  logger.info("ready clean Images")
-  let files = fs.readdirSync(__dirname);
-  files.forEach((item: string) => {
-    let fileName = item;
-    if (item.endsWith(".png")) {
-      logger.debug("ready delete item: ", fileName)
-      let filePath = path.join(__dirname, fileName)
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-        logger.info("file %s is deleted", fileName)
-      }
-
-    }
-  })
 }
 
 // uploadAndCleanImage()
@@ -334,8 +284,9 @@ async function start() {
   logger.info("started")
   isEnd = false
   try {
+    cleanImage()
     let config1 = config.configList.find((value) => value.prodAlias.toLowerCase() === PROD_NAME)
-    await notification.syncLastStatus(ossClient, config1)
+    await notification.syncLastStatus(config1)
     const browser = await getBrowser()
     checkRoleList = ""
     const page = await createPage(browser)
@@ -356,19 +307,18 @@ async function start() {
       logger.error(page.url())
       //pushstatus must be last one be called
       pushStatus(config1.prodAlias, 1)
-      let errorFileName = getImageName(`error-before-${lastAction}`)
-      await page.screenshot({ path: path.join(__dirname, errorFileName) });
+      await screenshot(page, `error-before-${lastAction}`)
       await page.close()
       notification.error(config1.prodName, error, checkRoleList)
     }
     finally {
-      await upload(config1)
+      await upload(config1.prodName)
       cleanImage()
       await browser.close()
       logger.info("browser closed")
     }
 
-    await notification.pushLastStatus(ossClient, config1)
+    await notification.pushLastStatus(config1)
     isEnd = true
 
   } catch (error) {
