@@ -39,6 +39,8 @@ export interface Config {
   password: string
   loginButtonClass: string
   spMgmtClass: string
+  customerName: string
+  customerClass: string
 }
 
 
@@ -51,7 +53,9 @@ export const configList: Array<Config> = [
     username: PALADIN_EA_USERNAME,
     password: PALADIN_EA_PASSWORD,
     loginButtonClass: ".login-button",
-    spMgmtClass: "header.jazz-select-customer-header span.step"
+    spMgmtClass: "header.jazz-select-customer-header span.step",
+    customerName: "",
+    customerClass: ""
   },
   {
     prodName: "千里眼",
@@ -61,7 +65,9 @@ export const configList: Array<Config> = [
     username: PALADIN_FA_USERNAME,
     password: PALADIN_FA_PASSWORD,
     loginButtonClass: ".login",
-    spMgmtClass: "header.select-customer-header span.title"
+    spMgmtClass: "header.select-customer-header span.title",
+    customerName: "蓝鲸的游乐场",
+    customerClass: "a.select-customer-item-herf"
   },
   {
     prodName: "机器顾问",
@@ -71,7 +77,9 @@ export const configList: Array<Config> = [
     username: PALADIN_MA_USERNAME,
     password: PALADIN_MA_PASSWORD,
     loginButtonClass: ".login-btn",
-    spMgmtClass: "div.pop-select-customer-header span"
+    spMgmtClass: "div.pop-select-customer-header span",
+    customerName: "",
+    customerClass: ""
   },
   {
     prodName: "变频顾问",
@@ -81,7 +89,9 @@ export const configList: Array<Config> = [
     username: PALADIN_DA_USERNAME,
     password: PALADIN_DA_PASSWORD,
     loginButtonClass: ".login",
-    spMgmtClass: "div.pop-minSize > span"
+    spMgmtClass: "div.pop-minSize > span",
+    customerName: "",
+    customerClass: ""
   },
   {
     prodName: "信息顾问",
@@ -91,7 +101,9 @@ export const configList: Array<Config> = [
     username: PALADIN_ITA_USERNAME,
     password: PALADIN_ITA_PASSWORD,
     loginButtonClass: ".login",
-    spMgmtClass: "header.select-customer-header span.title"
+    spMgmtClass: "header.select-customer-header span.title",
+    customerName: "",
+    customerClass: ""
   },
   {
     prodName: "DataEye",
@@ -101,6 +113,8 @@ export const configList: Array<Config> = [
     username: PALADIN_DE_USERNAME,
     password: PALADIN_DE_PASSWORD,
     loginButtonClass: ".login",
-    spMgmtClass: "header.select-customer-header span.step"
+    spMgmtClass: "header.select-customer-header span.step",
+    customerName: "",
+    customerClass: ""
   }
 ]

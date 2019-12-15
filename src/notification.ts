@@ -3,7 +3,7 @@ import * as request from "request"
 import { getLogger } from "log4js";
 import * as moment from "moment";
 import * as OSS from "ali-oss"
-
+import { ossClient } from "./util"
 
 const metalHost = process.env["PALADIN_METAL_HOST"];
 const alertEmail = process.env["PALADIN_ALERT_EMAIL"];
@@ -133,7 +133,7 @@ function getStatusFile(prodName: string) {
 }
 
 export default {
-  async syncLastStatus(ossClient: OSS, config: Config) {
+  async syncLastStatus(config: Config) {
     return
     try {
       let result = await ossClient.get(getStatusFile(config.prodName));
@@ -149,7 +149,7 @@ export default {
     }
 
   },
-  async pushLastStatus(ossClient: OSS, config: Config) {
+  async pushLastStatus(config: Config) {
     return
     try {
       let content = JSON.stringify(status)
