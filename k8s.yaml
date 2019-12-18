@@ -72,6 +72,12 @@ spec:
           value: "${PALADIN_DE_USERNAME}"
         - name: PALADIN_DE_PASSWORD
           value: "${PALADIN_DE_PASSWORD}"
+        - name: PALADIN_EMOP_MAIN_URI
+          value: "${PALADIN_EMOP_MAIN_URI}"
+        - name: PALADIN_EMOP_USERNAME
+          value: "${PALADIN_EMOP_USERNAME}"
+        - name: PALADIN_EMOP_PASSWORD
+          value: "${PALADIN_EMOP_PASSWORD}"
         - name: PALADIN_METAL_HOST
           value: "${PALADIN_METAL_HOST}"
         - name: PALADIN_ALERT_EMAIL
