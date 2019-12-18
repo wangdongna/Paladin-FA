@@ -7,8 +7,10 @@ import logConfig from "./logConfig";
 import notification from "./notification";
 import * as config from './prodConfig';
 import { pushDuration, pushStatus, reset } from "./pushGateway";
-import { cleanImage, getValidationCode, isMaintaining, screenshot, upload, initOssClient } from "./util";
+import { cleanImage, isMaintaining, screenshot, upload, initOssClient } from "./util";
 import checkMainFeatures from "./mainFeatures"
+import login from "./login"
+
 
 const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG"
 
@@ -152,7 +154,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
   }
 
   lastAction = "mainpage"
-  if (config.codeName !== "polka") {
+  if (config.codeName !== "polka" && config.codeName !== "emop") {
     let loginButton = await page.waitForSelector(config.loginButtonClass, timeoutOption)
     if (loginButton) {
       logger.info("login button shown")
@@ -183,74 +185,10 @@ async function run(page: puppeteer.Page, config: config.Config) {
     checkRoleList = `guard-ui,guard,classic`;
     await page.waitForNavigation(navigationOption)
   }
-  logger.info("entering sso page")
-  lastAction = "sso"
-  const veriCodeRes = await page.waitForResponse(
-    response => response.url().indexOf("GetVerificationCode") >= 0 && response.status() === 200 && response.request().method() !== "OPTIONS");
-  logger.info("veri code got it")
-  endTime = new Date()
-  duration = (endTime - startTime) / 1000
-  pushDuration(config.prodAlias, duration, "sso_success")
 
-  await screenshot(page, "sso")
+  await login(config, page)
 
-  const { Result: { Id } } = <any>await veriCodeRes.json();
-  logger.debug(`vericode id is ${Id}`)
-
-  await new Promise((resolve, reject) => {
-    getValidationCode(Id, async (val) => {
-      try {
-        const result = val
-        logger.debug("veri code value is", result)
-
-        if (!result) throw new Error("validtion code is empty")
-
-        await page.type("input[placeholder=请输入用户名]", config.username)
-        await page.type("input[placeholder=请输入密码]", config.password)
-        await page.type("input[placeholder=请输入图中算式结果]", result)
-
-        lastAction = "sso-filled-in"
-        await screenshot(page, "sso-filled-in")
-
-        let buttons = await page.$$(".pop-login-form-content-button button")
-        checkRoleList = `${config.codeName}-webapi,${config.codeName}-app`;
-        lastAction = "login-success"
-        startTime = new Date()
-        let responses = await Promise.all([
-          await buttons[1].click(),
-          await page.waitForNavigation(navigationOption),
-          await page.waitForNavigation(navigationOption),
-          await page.waitForNavigation(navigationOption),
-        ])
-        logger.info("customer selection shown")
-        responses.forEach((item: any) => {
-          if (item && item.url) {
-            logger.info("uri change to %s", item.url())
-          }
-        })
-
-
-        await page.waitForSelector(config.spMgmtClass, timeoutOption)
-        // await page.waitFor(10 * 1000); //wait for 10 seconds
-        logger.info("login success")
-        endTime = new Date()
-        duration = (endTime - startTime) / 1000
-        pushDuration(config.prodAlias, duration, "login_success")
-
-        await screenshot(page, "login-success")
-
-
-        await checkMainFeatures(config, page)
-
-        resolve()
-      }
-      catch (error) {
-        logger.error(error)
-        reject(error)
-      }
-    })
-  })
-
+  await checkMainFeatures(config, page)
 
 }
 
