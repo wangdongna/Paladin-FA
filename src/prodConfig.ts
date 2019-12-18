@@ -28,6 +28,11 @@ const PALADIN_DE_MAINURI = process.env["PALADIN_DE_MAIN_URI"]
 const PALADIN_DE_USERNAME = process.env["PALADIN_DE_USERNAME"]
 const PALADIN_DE_PASSWORD = process.env["PALADIN_DE_PASSWORD"]
 
+//EMOP
+const PALADIN_EMOP_MAINURI = process.env["PALADIN_EMOP_MAIN_URI"]
+const PALADIN_EMOP_USERNAME = process.env["PALADIN_EMOP_USERNAME"]
+const PALADIN_EMOP_PASSWORD = process.env["PALADIN_EMOP_PASSWORD"]
+
 
 
 export interface Config {
@@ -102,6 +107,18 @@ export const configList: Array<Config> = [
     password: PALADIN_ITA_PASSWORD,
     loginButtonClass: ".login",
     spMgmtClass: "header.select-customer-header span.title",
+    customerName: "",
+    customerClass: ""
+  },
+  {
+    prodName: "EMOP",
+    prodAlias: "EMOP",
+    codeName: "emop",
+    mainUri: PALADIN_EMOP_MAINURI,
+    username: PALADIN_EMOP_USERNAME,
+    password: PALADIN_EMOP_PASSWORD,
+    loginButtonClass: ".login",
+    spMgmtClass: "div.gatewayBar",
     customerName: "",
     customerClass: ""
   },
