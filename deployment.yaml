@@ -124,7 +124,7 @@ metadata:
   name: {{ project }}-{{ role }}-{{ PROD_NAME }}
 spec:
   rules:
-  - host: f-pl-{{ PROD_NAME }}.hz.ds.se.com
+  - host: ${HOST_I_PALADIN_{{ PROD_NAME }}}
     http:
       paths:
       - path: /
