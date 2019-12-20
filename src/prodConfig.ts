@@ -44,8 +44,8 @@ export interface Config {
   password: string
   loginButtonClass: string
   spMgmtClass: string
-  customerName: string
   customerClass: string
+  customerTextClass: string
 }
 
 
@@ -59,8 +59,8 @@ export const configList: Array<Config> = [
     password: PALADIN_EA_PASSWORD,
     loginButtonClass: ".login-button",
     spMgmtClass: "header.jazz-select-customer-header span.step",
-    customerName: "",
-    customerClass: ""
+    customerClass: "a.jazz-select-customer-item-content",
+    customerTextClass: "div:last-child"
   },
   {
     prodName: "千里眼",
@@ -71,8 +71,8 @@ export const configList: Array<Config> = [
     password: PALADIN_FA_PASSWORD,
     loginButtonClass: ".login",
     spMgmtClass: "header.select-customer-header span.title",
-    customerName: "蓝鲸的游乐场",
-    customerClass: "a.select-customer-item-herf"
+    customerClass: "a.select-customer-item-herf",
+    customerTextClass: "div.select-customer-item-title"
   },
   {
     prodName: "机器顾问",
@@ -83,8 +83,8 @@ export const configList: Array<Config> = [
     password: PALADIN_MA_PASSWORD,
     loginButtonClass: ".login-btn",
     spMgmtClass: "div.pop-select-customer-header span",
-    customerName: "",
-    customerClass: ""
+    customerClass: "div.customer-item",
+    customerTextClass: "div.customer-title"
   },
   {
     prodName: "变频顾问",
@@ -95,8 +95,8 @@ export const configList: Array<Config> = [
     password: PALADIN_DA_PASSWORD,
     loginButtonClass: ".login",
     spMgmtClass: "div.pop-minSize > span",
-    customerName: "",
-    customerClass: ""
+    customerClass: "div.pop-select-customer-ct",
+    customerTextClass: "span.pop-select-customer-ct-title"
   },
   {
     prodName: "信息顾问",
@@ -107,8 +107,8 @@ export const configList: Array<Config> = [
     password: PALADIN_ITA_PASSWORD,
     loginButtonClass: ".login",
     spMgmtClass: "header.select-customer-header span.title",
-    customerName: "",
-    customerClass: ""
+    customerClass: "a.select-customer-item-herf",
+    customerTextClass: "div.select-customer-item-title"
   },
   {
     prodName: "EMOP",
@@ -119,8 +119,8 @@ export const configList: Array<Config> = [
     password: PALADIN_EMOP_PASSWORD,
     loginButtonClass: ".login",
     spMgmtClass: "div.gatewayBar",
-    customerName: "",
-    customerClass: ""
+    customerClass: "",
+    customerTextClass: ""
   },
   {
     prodName: "DataEye",
@@ -131,7 +131,7 @@ export const configList: Array<Config> = [
     password: PALADIN_DE_PASSWORD,
     loginButtonClass: ".login",
     spMgmtClass: "header.select-customer-header span.step",
-    customerName: "",
-    customerClass: ""
+    customerClass: "a.select-customer-item-herf",
+    customerTextClass: "div.select-customer-item-title"
   }
 ]

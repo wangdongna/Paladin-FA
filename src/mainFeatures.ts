@@ -8,17 +8,25 @@ import * as daModule from "./daModule"
 import * as eaModule from "./eaModule"
 import * as maModule from "./maModule"
 import * as itaModule from "./itaModule"
+import * as deModule from "./deModule"
 
 
 const logger = getLogger("mainFeatures")
 
 const currentProd = process.env["PROD_NAME"]
+
+function getCustomerName() {
+  let key = `PALADIN_${currentProd.toUpperCase()}_CUSTOMERNAME`
+  return process.env[key]
+}
+
 const prodMap: { [key: string]: any } = {
   "fa": faModule.main,
   "ea": eaModule.main,
   "da": daModule.main,
   "ma": maModule.main,
   "ita": itaModule.main,
+  "de": deModule.main,
   "emop": platform.main
 }
 function getCurrentMain() {
@@ -26,26 +34,34 @@ function getCurrentMain() {
 }
 
 export default async (config: config.Config, page: puppeteer.Page) => {
-  if (currentProd.toLowerCase() !== "emop") {
+  let prod = currentProd.toLowerCase()
+  let customerName = getCustomerName()
+  if (prod !== "emop") {
     let customerClass = config.customerClass
     let customerList = await page.$$(customerClass)
     let willSelectedCustomer: puppeteer.ElementHandle = null
     for (let ele of customerList) {
-      let customerName = await ele.$eval("div.select-customer-item-title", (node) => node.innerHTML)
-      if (customerName === config.customerName) {
+      let customerName = await ele.$eval(config.customerTextClass, (node) => node.innerHTML)
+      if (customerName === customerName) {
         willSelectedCustomer = ele
         break
       }
     }
     if (!willSelectedCustomer) {
-      logger.error("no find customer name is %s", config.customerName)
+      logger.error("no find customer name is %s", customerName)
       return
     }
-    logger.debug("find customer: %s", config.customerName)
-    await Promise.all([
-      page.waitForNavigation(),
+    logger.debug("find customer: %s", customerName)
+    if (prod !== "de" && prod !== "ea") {
+      await Promise.all([
+        page.waitForNavigation(),
+        willSelectedCustomer.click()
+      ]);
+    }
+    else {
       willSelectedCustomer.click()
-    ]);
+    }
+
     logger.info("enter offer's main page")
     await screenshot(page, "contentpage")
   }
