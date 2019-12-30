@@ -26,11 +26,12 @@ export interface PlainObject <T = any> { [key: string]: T; };
 
 let OnlineMenuConfig: PlainObject = [];
 const MenuContainerSelector = '.pop-menu > *';
+const SubMenuContainerSelector = '[role="menu"]';
+const SubItemSelector = '[role="menu"] > div';
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15");
 const TimeOutOption: PlainObject = {
   waitUntil: ["domcontentloaded"]
 };
-const PALADIN_EMOP_MAINURI = process.env["PALADIN_EMOP_MAIN_URI"];
 
 const basicConfig: Array<MenuItemConfig> = [
   {
@@ -70,14 +71,12 @@ const basicConfig: Array<MenuItemConfig> = [
       {
         key: 'comxbox',
         name: 'ComX BOX',
-        checkpointSelector: '.new-gateway',
-        url: '/zh-cn/%customerCode%/gateway/comx/'
+        checkpointSelector: '.new-gateway'
       },
       {
         key: 'iot',
         name: 'IoT',
         checkpointSelector: '.gateway',
-        url: 'https://%EMOPHost%/doorbell?path=/gateway/%customerID%&sysId=32&spDomain=%spDomain%&userId=%userID%'
       },
     ]
   }
@@ -88,34 +87,37 @@ const handleCheckUnitPage = async (index: string, menu: PlainObject, page: puppe
 
   const gotoSubMenuPage = async (params: PlainObject): Promise<void> => {
 
-    const { customerID, userID, customerCode, spDomain, emopHost, subMenu } = params;
-
+    const { idx, childConfig, parentEle } = params;
+  
     try {
-      if (subMenu.url) {
-        time.before = new Date();
+      await parentEle.hover();
+      await page.waitForSelector(SubMenuContainerSelector);
 
-        subMenu.url = /^\/zh-cn/.test(subMenu.url) ? `${config.mainUri}${subMenu.url}` : subMenu.url;
-        const path = subMenu.url
-                      .replace('%EMOPHost%', emopHost)
-                      .replace('%spDomain%', spDomain)
-                      .replace('%customerCode%', customerCode)
-                      .replace('%customerID%', customerID)
-                      .replace('%userID%', userID);
-  
-        await page.goto(`${path}`);
-  
-        await page.waitForSelector(
-          subMenu.checkpointSelector, 
-          TimeOutOption
-        );
-  
-        time.after = new Date();
+      const currentMenu = [...await page.$$(SubItemSelector)][idx];
 
-        await handleScreenShot(time, subMenu.key, config, page);
+      time.before = new Date();
+      await currentMenu.click();
+      
+      await page.waitFor(1000);
+      const pageList = await page.browser().pages();
+
+      let newPage = page;
+      if (pageList.length > 2) {
+        newPage = pageList[pageList.length - 1]
       }
+
+      await newPage.waitForSelector(
+        childConfig.checkpointSelector, 
+        TimeOutOption
+      );
+
+      time.after = new Date();
+
+      await handleScreenShot(time, childConfig.key, config, newPage);
+
     } catch (error) {
       // 捕获二级菜单错误
-      return Promise.reject(subMenu)
+      return Promise.reject(childConfig)
     }
     
   }
@@ -123,42 +125,48 @@ const handleCheckUnitPage = async (index: string, menu: PlainObject, page: puppe
   try {
     const path = menu.href;
     
-    // 有网址的跳转
+    // 一级菜单
     if (path) {
-      const newPath = /^\/zh-cn.*\/$/.test(path)
-                   ? `${config.mainUri}${path}` : path;
 
       time.before = new Date();
-      await page.goto(newPath);
-      await page.waitForSelector(basicConfig[Number(index)].checkpointSelector, TimeOutOption);
-      
-      time.after = new Date();
+      await menu.ele.click();
 
+      await page.waitForSelector(
+        basicConfig[Number(index)].checkpointSelector, 
+        TimeOutOption
+      );
+
+      time.after = new Date();
       return time;
 
     }
-    // 有二级菜单
-    const currentMenu = basicConfig[Number(index)];
-    if ( currentMenu && currentMenu.children) {
-      const emopHost = PALADIN_EMOP_MAINURI.split('/')[2];
-      const spDomain = config.mainUri.replace("https://","").split('.')[0];
-      const Cookies = await page.cookies(config.mainUri);
-      const customerID = await Cookies.find(c => c.name === 'CUSTOMERID').value;
-      const userID = await Cookies.find(c => c.name === 'UserId').value;
-      const customerCode = Number(customerID).toString(16);
 
-      for (let idx in currentMenu.children) {
+    await menu.ele.hover();
+    await page.waitForSelector(SubMenuContainerSelector);
+
+    const subItems = await page.$$eval(SubItemSelector, submenu => {
+      return [...submenu].map(item => {
+        return {
+          text: item.textContent
+        }
+      });
+    })
+    
+    for (let idx in subItems) {
+      // 查找二级菜单子元素
+      const childConfig = basicConfig[Number(index)].children[Number(idx)];
+      // 如果是配置过的项目
+      if (childConfig.name === subItems[idx].text) {
         await gotoSubMenuPage({
-          subMenu: currentMenu.children[idx],
-          customerID,
-          userID,
-          customerCode,
-          spDomain,
-          emopHost
-        }).catch(e => { logger.warn(`menu ${e.name} element[${e.checkpointSelector}] or url[${e.url}] was not found or not shown`) })
+          idx,
+          childConfig,
+          parentEle: menu.ele
+        }).catch(e => {
+          logger.warn(`menu ${e.name} element[${e.checkpointSelector}] was not found or not shown`)
+        });
       }
-      
     }
+
   } catch (error) {
     // 捕获一级菜单的错误
     const ele = basicConfig[Number(index)];
@@ -189,9 +197,11 @@ const handleScreenShot = async (t: PlainObject, screenname: string, config: conf
 export async function main(config: config.Config, page: puppeteer.Page) {
   logger.info('Into DA-Main')
 
+  const OnlineMenus = await page.$$(MenuContainerSelector);
+
   // 查找出所有线上的一级菜单名
   OnlineMenuConfig = await page.$$eval(MenuContainerSelector, menus => {
-    return [...menus].map((item, index) => {
+    return [...menus].map(item => {
       return {
         href: item.getAttribute('href'),
         text: item.textContent
@@ -200,13 +210,14 @@ export async function main(config: config.Config, page: puppeteer.Page) {
   });
 
   try {
-    for (let index in OnlineMenuConfig) {
+    for (let index in OnlineMenus) {
 
-      // 以配置文件优先
-      if (basicConfig.every(c => c.name !== OnlineMenuConfig[index].text)) {
+      // 未配置过的item 跳过
+      if (basicConfig[index].name !== OnlineMenuConfig[index].text) {
         return;
       }
       
+      OnlineMenuConfig[index]['ele'] = OnlineMenus[index];
       const time = await handleCheckUnitPage(index, OnlineMenuConfig[index], page, config).catch(e => {
         logger.warn(`menu ${e.page} element[${e.element}] was not found or not shown`)
       });
