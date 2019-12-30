@@ -5,62 +5,76 @@ let config = {
     {
       "name":"myAsset",
       "isSubMenu": false,
-      "url":"/zh-cn/#cCode#/asset/",
-      "validClass":["div.pop-viewable-title"]
+      "isOutLink": false,
+      "itemSelector":"/asset/",
+      "validClass":["div.pop-actionbar-buttons"]
     },
     {
       "name":"alarmList",
       "isSubMenu": false,
-      "url":"/zh-cn/#cCode#/alarm/",
+      "isOutLink": false,
+      "itemSelector":"/alarm/",
       "validClass":["div.alarm-tab-item"]
     },
     {
       "name":"maintenancePlan",
       "isSubMenu": false,
-      "url":"/zh-cn/#cCode#/maintenance/",
+      "isOutLink": false,
+      "itemSelector":"/maintenance/",
       "validClass":["a.maintenance-header-tab"]
     },
     {
       "name":"ticket",
       "isSubMenu": false,
-      "url":"/zh-cn/#cCode#/ticket/",
+      "isOutLink": false,
+      "itemSelector":"/ticket/",
       "validClass":["a.ticket-tab-link"]
     },
     {
       "name":"aftersales",
       "isSubMenu": false,
-      "url":"/zh-cn/#cCode#/aftersales/",
+      "isOutLink": false,
+      "itemSelector":"/aftersales/",
       "validClass":["div.ant-tabs-extra-content"]
     },
     {
       "name":"doc",
       "isSubMenu": false,
-      "url":"/zh-cn/#cCode#/doc/",
-      "validClass":"i.anticon-file-add"
+      "isOutLink": false,
+      "itemSelector":"/doc/",
+      "validClass":["i.anticon-file-add"]
     },
     {
       "name":"comXGatewayManagement",
       "isSubMenu": true,
-      "url":"/zh-cn/#cCode#/gateway/comx/",
+      "isOutLink": false,
+      "hoverSelector":"div.pop-mainmenu-level-main",
+      "subMenuSelector":'[role="menu"] > li',
+      "itemSelector":"ComX",
       "validClass":["div.new-gateway-tools"],
     },
     {
       "name":"IOTGatewayManagement",
       "isSubMenu": true,
-      "url":"https://#EMOPHost#/doorbell?path=/gateway/#cId#&sysId=2&spDomain=#spDomain#&userId=#uId#",
+      "isOutLink": true,
+      "hoverSelector":"div.pop-mainmenu-level-main",
+      "subMenuSelector":'[role="menu"] > li',
+      "itemSelector":"IoT",
       "validClass":["div.gatewayBar"],
-    },
-    {
-      "name":"dataeye",
-      "isSubMenu": false,
-      "url":"/zh-cn/dataeye?customerId=#cId#&userId=#uId#",
-      "validClass":["div.addBoard","div.add-board"],    //因dataEye中有数据和无数据的样式表不一样
     },
     {
       "name":"tagManagement",
       "isSubMenu": false,
-      "url":"https://#EMOPHost#/doorbell?path=/tag/#cId#&sysId=2&spDomain=#spDomain#&userId=#uId#",
+      "isOutLink": true,
+      "itemSelector":"/tag/",
       "validClass":["div.dropdown-group"],
+    },
+    {
+      "name":"dataEye",
+      "isSubMenu": false,
+      "isOutLink": true,
+      "itemSelector":"/dataeye",
+      "validClass":["div.board-view-top-menu"],
     }
   ]
 }
