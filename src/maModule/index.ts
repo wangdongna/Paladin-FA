@@ -70,25 +70,6 @@ function encodeId(id: any){
   return Number(id).toString(16);
 }
 
-/**
- * @description 获取会话相关的参数
- * @param {config.Config} config
- * @param {puppeteer.Page} page
- * @returns 返回一个会话对象 {"CId" : cId, "CCode" : cCode, "UId" : uId, "spDomain" : spDomain,"emopHost" : emopHost}
- */
-async function getParams(config: config.Config, page: puppeteer.Page) {
-  let emopHost = PALADIN_EMOP_MAINURI.split('/')[2];
-  let spDomain = config.mainUri.replace("https://","").split('.')[0];
-  logger.debug(`get current spDomain from mainUrl ${spDomain}`);
-  let cookieList = await page.cookies(config.mainUri);
-  let cId = cookieList.find(cookie => cookie.name === 'CUSTOMERID').value;
-  let cCode = encodeId(cId);
-  logger.debug(`get current customer from cookie ${cId} => ${cCode}`);
-  let uId = cookieList.find(cookie => cookie.name === 'UserId').value;
-  logger.debug(`get current userId from cookie ${uId}`);
-  return {"CId" : cId, "CCode" : cCode, "UId" : uId, "spDomain" : spDomain,"emopHost" : emopHost};
-}
-
 async function getCheckElementHandle(page: puppeteer.Page, menuList: puppeteer.ElementHandle<Element>[], cfgItem : any) :  Promise<puppeteer.ElementHandle<Element>> {
   let rst: puppeteer.ElementHandle<Element>;
   for (let i = 0; i < menuList.length; i++) {
