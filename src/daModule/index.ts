@@ -185,7 +185,7 @@ const handleScreenShot = async (t: PlainObject, screenname: string, config: conf
   pushDuration(config.prodAlias, duration, screenname);
   
   // 处理是否超时的逻辑
-  if (duration < NAV_TIMEOUT) {
+  if (Math.round(duration) < Number(NAV_TIMEOUT)) {
     await screenshot(page, `${screenname}-success`)
     logger.info(`menu ${screenname} check success`)
   } else {
@@ -197,7 +197,7 @@ const handleScreenShot = async (t: PlainObject, screenname: string, config: conf
 export async function main(config: config.Config, page: puppeteer.Page) {
   logger.info('Into DA-Main')
 
-  const OnlineMenus = await page.$$(MenuContainerSelector);
+  const onlineMenus = await page.$$(MenuContainerSelector);
 
   // 查找出所有线上的一级菜单名
   OnlineMenuConfig = await page.$$eval(MenuContainerSelector, menus => {
@@ -210,14 +210,14 @@ export async function main(config: config.Config, page: puppeteer.Page) {
   });
 
   try {
-    for (let index in OnlineMenus) {
+    for (let index in onlineMenus) {
 
       // 未配置过的item 跳过
       if (basicConfig[index].name !== OnlineMenuConfig[index].text) {
         return;
       }
       
-      OnlineMenuConfig[index]['ele'] = OnlineMenus[index];
+      OnlineMenuConfig[index]['ele'] = onlineMenus[index];
       const time = await handleCheckUnitPage(index, OnlineMenuConfig[index], page, config).catch(e => {
         logger.warn(`menu ${e.page} element[${e.element}] was not found or not shown`)
       });
@@ -225,5 +225,7 @@ export async function main(config: config.Config, page: puppeteer.Page) {
       time && await handleScreenShot(time, basicConfig[Number(index)].key, config, page);
 
     }
-  } catch (e) {}
+  } catch (e) {
+    logger.warn(`page menus was not found or not shown`)
+  }
 }
