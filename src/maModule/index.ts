@@ -8,7 +8,6 @@ import e = require("express");
 
 const logger = getLogger("maModule");
 const timeoutOption = { timeout: 10000 };
-const PALADIN_EMOP_MAINURI = process.env["PALADIN_EMOP_MAIN_URI"];
 
 /**
  * @description 单独校验每一个菜单的配置项
@@ -58,16 +57,6 @@ async function validMenu(config: config.Config, eleItem: puppeteer.ElementHandle
   duration = (endTime - startTime) / 1000;
   pushDuration(config.prodAlias, duration,cfgItem.name);
   return rst;
-}
-
-
-/**
- * @description 前端将整型转换成16进制的字符串
- * @param {*} id
- * @returns 
- */
-function encodeId(id: any){
-  return Number(id).toString(16);
 }
 
 async function getCheckElementHandle(page: puppeteer.Page, menuList: puppeteer.ElementHandle<Element>[], cfgItem : any) :  Promise<puppeteer.ElementHandle<Element>> {
