@@ -21,28 +21,28 @@ let config = {
       "isSubMenu": false,
       "isOutLink": false,
       "itemSelector":"/maintenance/",
-      "validClass":["a.maintenance-header-tab"]
+      "validClass":["div.maintenance"]
     },
     {
       "name":"ticket",
       "isSubMenu": false,
       "isOutLink": false,
       "itemSelector":"/ticket/",
-      "validClass":["a.ticket-tab-link"]
+      "validClass":["div.ticket-list"]
     },
     {
       "name":"aftersales",
       "isSubMenu": false,
       "isOutLink": false,
       "itemSelector":"/aftersales/",
-      "validClass":["div.ant-tabs-extra-content"]
+      "validClass":["div.aftersales-manage"]
     },
     {
       "name":"doc",
       "isSubMenu": false,
       "isOutLink": false,
       "itemSelector":"/doc/",
-      "validClass":["i.anticon-file-add"]
+      "validClass":["div.pop-doc"]
     },
     {
       "name":"comXGatewayManagement",

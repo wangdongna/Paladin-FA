@@ -7,7 +7,7 @@ import maConfig from "./config"
 import e = require("express");
 
 const logger = getLogger("maModule");
-const timeoutOption = { timeout: 5000 };
+const timeoutOption = { timeout: 10000 };
 const PALADIN_EMOP_MAINURI = process.env["PALADIN_EMOP_MAIN_URI"];
 
 /**
