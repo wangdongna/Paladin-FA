@@ -42,7 +42,7 @@ export function isMaintaining() {
 
 
 function getImageName(key: string) {
-  return `${key}-${moment().utcOffset(8).format("YYYY-MM-DD HH:mm:DD")}.png`
+  return `${key}-${moment().utcOffset(8).format("YYYY-MM-DD HHmmDD")}.png`
 }
 
 export async function screenshot(page: puppeteer.Page, name: string) {
