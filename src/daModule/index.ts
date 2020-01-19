@@ -143,8 +143,8 @@ const handleCheckUnitPage = async (index: string, menu: PlainObject, page: puppe
       });
 
       time.after = new Date();
+      
       return time;
-
     }
 
     await menu.ele.hover();
