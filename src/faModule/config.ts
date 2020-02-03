@@ -134,7 +134,7 @@ let config = {
         "isSubMenu": false,
         "isOutLink": true,
         "itemSelector":"数据看板",
-        "validClass":["div.board-view-top-menu"]
+        "validClass":["div.navigation-bar"]
       }
     ]
   }
