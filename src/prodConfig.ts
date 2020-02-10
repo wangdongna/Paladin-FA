@@ -58,9 +58,9 @@ export const configList: Array<Config> = [
     username: PALADIN_EA_USERNAME,
     password: PALADIN_EA_PASSWORD,
     loginButtonClass: ".login-button",
-    spMgmtClass: "header.jazz-select-customer-header span.step",
-    customerClass: "a.jazz-select-customer-item-content",
-    customerTextClass: "div:last-child"
+    spMgmtClass: "header.select-customer-header span.title",
+    customerClass: "dev.select-customer-item-info",
+    customerTextClass: "div:select-customer-item-info-title"
   },
   {
     prodName: "千里眼",
