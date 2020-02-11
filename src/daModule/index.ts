@@ -30,7 +30,8 @@ const SubMenuContainerSelector = '[role="menu"]';
 const SubItemSelector = '[role="menu"] > div';
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15");
 const TimeOutOption: PlainObject = {
-  waitUntil: ["domcontentloaded"]
+  waitUntil: ["domcontentloaded"],
+  timeout: NAV_TIMEOUT * 1000
 };
 
 const basicConfig: Array<MenuItemConfig> = [
@@ -109,7 +110,9 @@ const handleCheckUnitPage = async (index: string, menu: PlainObject, page: puppe
       await newPage.waitForSelector(
         childConfig.checkpointSelector, 
         TimeOutOption
-      );
+      ).catch(e => {
+        logger.warn(`menu ${childConfig.name} element[${childConfig.checkpointSelector}] was not found or not shown`)
+      });
 
       time.after = new Date();
 
@@ -134,11 +137,14 @@ const handleCheckUnitPage = async (index: string, menu: PlainObject, page: puppe
       await page.waitForSelector(
         basicConfig[Number(index)].checkpointSelector, 
         TimeOutOption
-      );
+      ).catch(e => {
+        const ele = basicConfig[Number(index)];
+        logger.warn(`menu ${ele.name} element[${ele.checkpointSelector}] was not found or not shown`)
+      });
 
       time.after = new Date();
+      
       return time;
-
     }
 
     await menu.ele.hover();
@@ -162,7 +168,7 @@ const handleCheckUnitPage = async (index: string, menu: PlainObject, page: puppe
           childConfig,
           parentEle: menu.ele
         }).catch(e => {
-          logger.warn(`menu ${e.name} element[${e.checkpointSelector}] was not found or not shown`)
+          logger.warn(`submenu ${e.name} was not found or not shown`)
         });
       }
     }
@@ -219,7 +225,7 @@ export async function main(config: config.Config, page: puppeteer.Page) {
       
       OnlineMenuConfig[index]['ele'] = onlineMenus[index];
       const time = await handleCheckUnitPage(index, OnlineMenuConfig[index], page, config).catch(e => {
-        logger.warn(`menu ${e.page} element[${e.element}] was not found or not shown`)
+        logger.warn(`menu ${e.page} was not found submenu`)
       });
 
       time && await handleScreenShot(time, basicConfig[Number(index)].key, config, page);
