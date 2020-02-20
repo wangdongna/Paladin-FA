@@ -63,6 +63,15 @@ let config = {
       "validClass":["div.gatewayBar"],
     },
     {
+      "name":"alarmGatewayManagement",
+      "isSubMenu": true,
+      "isOutLink": false,
+      "hoverSelector":"div.pop-mainmenu-level-main",
+      "subMenuSelector":'[role="menu"] > li',
+      "itemSelector":"网关离线报警",
+      "validClass":["div.alarm-tab-item"]
+    },
+    {
       "name":"tagManagement",
       "isSubMenu": false,
       "isOutLink": true,
