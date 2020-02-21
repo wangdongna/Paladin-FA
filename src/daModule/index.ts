@@ -27,7 +27,7 @@ export interface PlainObject <T = any> { [key: string]: T; };
 let OnlineMenuConfig: PlainObject = [];
 const MenuContainerSelector = '.pop-menu > *';
 const SubMenuContainerSelector = '[role="menu"]';
-const SubItemSelector = '[role="menu"] > div';
+const SubItemSelector = '[role="menu"] > li';
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15");
 const TimeOutOption: PlainObject = {
   waitUntil: ["domcontentloaded"],
