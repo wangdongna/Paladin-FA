@@ -54,15 +54,6 @@ let config = {
       "validClass":["div.new-gateway-tools"],
     },
     {
-      "name":"IOTGatewayManagement",
-      "isSubMenu": true,
-      "isOutLink": true,
-      "hoverSelector":"div.pop-mainmenu-level-main",
-      "subMenuSelector":'[role="menu"] > li',
-      "itemSelector":"IoT",
-      "validClass":["div.gatewayBar"],
-    },
-    {
       "name":"alarmGatewayManagement",
       "isSubMenu": true,
       "isOutLink": false,
@@ -70,6 +61,15 @@ let config = {
       "subMenuSelector":'[role="menu"] > li',
       "itemSelector":"网关离线报警",
       "validClass":["div.alarm-tab-item"]
+    },
+    {
+      "name":"IOTGatewayManagement",
+      "isSubMenu": true,
+      "isOutLink": true,
+      "hoverSelector":"div.pop-mainmenu-level-main",
+      "subMenuSelector":'[role="menu"] > li',
+      "itemSelector":"IoT",
+      "validClass":["div.gatewayBar"],
     },
     {
       "name":"tagManagement",
