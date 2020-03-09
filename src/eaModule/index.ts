@@ -7,9 +7,9 @@ import { screenshot, isLocatorReady } from "../util";
 const logger = getLogger("eaModule");
 const currentProd = process.env["PROD_NAME"];
 const buidingClass: string =
-  "ul li.select-customer-item dev.select-customer-item-hierachylist dev.select-customer-item-hierachylist-list";
+  "ul li div.select-customer-item-hierachylist div.select-customer-item-hierachylist-list div.select-customer-item-hierachylist-list-item";
 const buildingTextClass: string =
-  "dev.select-customer-item-hierachylist-list-item-font";
+  ".select-customer-item-hierachylist-list-item-font";
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15");
 const TimeOutOption: Object = {
   visible: true,
@@ -36,8 +36,9 @@ async function setClasses(
   }
 
   for (let ele of classList) {
-    // logger.info(`${variate} ele is`, ele);
-    let textName = await ele.$eval(textClass, (node: any) => node.innerHTML);
+    logger.info(`${variate} ele is`, ele);
+    let textName = await ele.$eval(textClass, (node: any) => node.innerText);
+
     if (textName === textName1) {
       willSelected = ele;
       break;
@@ -61,7 +62,7 @@ async function selectCustomer(config: config.Config, page: puppeteer.Page) {
     config.customerTextClass
   );
   if (!willSelectedCustomer) {
-    logger.error("no find customer name is %s", customerName1);
+    logger.error("find no customer name is %s", customerName1);
     return;
   }
   logger.debug("find customer: %s", customerName1);
@@ -70,8 +71,8 @@ async function selectCustomer(config: config.Config, page: puppeteer.Page) {
   await page
     .waitForSelector(".select-customer-item-hierachylist-list", TimeOutOption)
     .then(async list => {
-      buildingList = await page.$$(buildingList.buidingClass);
-      logger.debug("waitForSelector succee % is", buildingName1);
+      buildingList = await page.$$(buidingClass);
+      logger.debug("waitForSelector success % is", buildingName1);
       willSelectedBuilding = await setClasses(
         "buiding",
         buildingName1,
@@ -83,13 +84,14 @@ async function selectCustomer(config: config.Config, page: puppeteer.Page) {
     .catch(() => logger.error("waitForSelector error % is "));
 
   if (!willSelectedBuilding) {
-    logger.error("no find buiding name is %s", buildingName1);
+    logger.error("find no buiding name is %s", buildingName1);
     return;
+  } else {
+    logger.debug("find buiding: %s", buildingName1);
+    await Promise.all([page.waitForNavigation(), willSelectedCustomer.click()]);
+    logger.info("enter offer's main page");
+    await screenshot(page, "contentpage");
   }
-  logger.debug("find buiding: %s", buildingName1);
-
-  logger.info("enter offer's main page");
-  await screenshot(page, "contentpage");
 }
 export async function main(config: config.Config, page: puppeteer.Page) {
   await selectCustomer(config, page);
