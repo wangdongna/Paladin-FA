@@ -224,7 +224,8 @@ export async function main(config: config.Config, page: puppeteer.Page) {
       }
       
       OnlineMenuConfig[index]['ele'] = onlineMenus[index];
-      const time = await handleCheckUnitPage(index, OnlineMenuConfig[index], page, config).catch(e => {
+      const time = await handleCheckUnitPage(index, OnlineMenuConfig[index], page, config).catch(async e => {
+        await screenshot(page, `error-${e.page}`);
         logger.warn(`menu ${e.page} was not found submenu`)
       });
 
@@ -232,6 +233,7 @@ export async function main(config: config.Config, page: puppeteer.Page) {
 
     }
   } catch (e) {
+    await screenshot(page, `error-unknown`)
     logger.warn(`page menus was not found or not shown`)
   }
 }
