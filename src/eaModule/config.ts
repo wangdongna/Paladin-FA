@@ -1,9 +1,10 @@
-export interface buildingConfig {
+export interface buildingClassConfig {
   buidingClass: string;
   buidingTextClass: string;
 }
 
-export const buildingList: buildingConfig = {
-  buidingClass: ".select-customer-item-hierachylist",
-  buidingTextClass: "dev.select-customer-item-hierachylist-list-item-font"
+export const buildingClassList: any = {
+  buidingClass:
+    "ul li div.select-customer-item-hierachylist div.select-customer-item-hierachylist-list div.select-customer-item-hierachylist-list-item",
+  buidingTextClass: ".select-customer-item-hierachylist-list-item-font"
 };
