@@ -14,7 +14,8 @@ const TimeOutOption: PlainObject = {
   timeout: NAV_TIMEOUT * 1000
 };
 const AllMenuContainer = ".jazz-menu > *";
-
+const SubMenuContainerSelector = '[role="menu"]';
+const SubItemSelector = "[role='menu'] > div";
 let OnlineMenuConfig: PlainObject = [];
 
 async function handleCheckUnitPage(
@@ -23,13 +24,48 @@ async function handleCheckUnitPage(
   page: puppeteer.Page,
   config: config.Config
 ) {
+  const gotoSubMenuPage = async (params: PlainObject): Promise<void> => {
+    const { idx, childConfig, parentEle } = params;
+    logger.info("two menu");
+    try {
+      await parentEle.hover();
+      await page.waitForSelector(SubMenuContainerSelector);
+
+      const currentMenu = [...(await page.$$(SubItemSelector))][idx];
+
+      time.before = new Date();
+      await currentMenu.click();
+
+      await page.waitFor(1000);
+      const pageList = await page.browser().pages();
+
+      let newPage = page;
+      if (pageList.length > 2) {
+        newPage = pageList[pageList.length - 1];
+      }
+
+      await newPage
+        .waitForSelector(childConfig.checkSelector, TimeOutOption)
+        .catch(e => {
+          logger.warn(
+            `no path menu ${childConfig.name} element[${childConfig.checkSelector}] was not found or not shown`
+          );
+        });
+
+      time.after = new Date();
+
+      // await handleScreenShot(time, childConfig.key, config, newPage);
+    } catch (error) {
+      // 捕获二级菜单错误
+      return Promise.reject(childConfig);
+    }
+  };
   let time: PlainObject = {};
   try {
     const path = menu.href;
     logger.info(path, "path");
     // 一级菜单
     if (path) {
-      logger.info("info to path");
       time.before = new Date();
       await menu.ele.click();
 
@@ -41,7 +77,7 @@ async function handleCheckUnitPage(
         .catch((e: any) => {
           const ele = basicConfig[Number(index)];
           logger.warn(
-            `menu ${ele.name} element[${ele.checkSelector}] was not found or not shown`
+            `path menu ${ele.name} element[${ele.checkSelector}] was not found or not shown checkSelector`
           );
         });
       await page
@@ -49,39 +85,37 @@ async function handleCheckUnitPage(
         .catch((e: any) => {
           const ele = basicConfig[Number(index)];
           logger.warn(
-            `menu ${ele.name} element[${ele.validClass}] was not found or not shown`
+            `path menu ${ele.name} element[${ele.validClass}] was not found or not shown validClass`
           );
         });
       time.after = new Date();
-      logger.info(time, "time is");
       return time;
     }
-    logger("no path", menu.ele);
+    logger.info("no path");
     await menu.ele.hover();
-    // await page.waitForSelector(SubMenuContainerSelector);
-
-    // const subItems = await page.$$eval(SubItemSelector, submenu => {
-    //   return [...submenu].map(item => {
-    //     return {
-    //       text: item.textContent
-    //     }
-    //   });
-    // })
-
-    // for (let idx in subItems) {
-    //   // 查找二级菜单子元素
-    //   const childConfig = basicConfig[Number(index)].children[Number(idx)];
-    //   // 如果是配置过的项目
-    //   if (childConfig.name === subItems[idx].text) {
-    //     await gotoSubMenuPage({
-    //       idx,
-    //       childConfig,
-    //       parentEle: menu.ele
-    //     }).catch(e => {
-    //       logger.warn(`submenu ${e.name} was not found or not shown`)
-    //     });
-    //   }
-    // }
+    await page.waitForSelector(SubMenuContainerSelector);
+    const subItems = await page.$$eval(SubItemSelector, submenu => {
+      return [...submenu].map(item => {
+        return {
+          text: item.textContent
+        };
+      });
+    });
+    logger.info("subItems", subItems);
+    for (let idx in subItems) {
+      // 查找二级菜单子元素
+      const childConfig = basicConfig[Number(index)].children[Number(idx)];
+      // 如果是配置过的项目
+      if (childConfig.name === subItems[idx].text) {
+        await gotoSubMenuPage({
+          idx,
+          childConfig,
+          parentEle: menu.ele
+        }).catch(e => {
+          logger.warn(`submenu ${e.name} was not found or not shown`);
+        });
+      }
+    }
   } catch (error) {
     // 捕获一级菜单的错误
     const ele = basicConfig[Number(index)];
@@ -105,13 +139,20 @@ async function selectMenu(config: config.Config, page: puppeteer.Page) {
     });
   });
   logger.info(OnlineMenuConfig, "OnlineMenuConfig");
-
   try {
+    let timea = {};
     for (let index in onlineMenus) {
       // 未配置过的item 跳过
+      logger.info("onlineMenus[index]");
       if (basicConfig[index].name !== OnlineMenuConfig[index].text) {
         return;
       }
+
+      if (basicConfig[index].name == "智能诊断") {
+        timea["after"] = new Date();
+        logger.info("智能诊断Time", timea);
+      }
+
       logger.info(basicConfig[index].name, "basicConfig ");
       OnlineMenuConfig[index]["ele"] = onlineMenus[index];
       const time = await handleCheckUnitPage(
@@ -123,7 +164,9 @@ async function selectMenu(config: config.Config, page: puppeteer.Page) {
         await screenshot(page, `error-${e.page}`);
         logger.warn(`menu ${e.page} was not found submenu`);
       });
-
+      if (basicConfig[index].name == "节能效果") {
+        timea["before"] = new Date();
+      }
       // time &&
       //   (await handleScreenShot(
       //     time,
