@@ -1,15 +1,145 @@
 import * as config from "../prodConfig";
-import { buildingClassList } from "./config";
+import { buildingClassList, basicConfig } from "./config";
 import * as puppeteer from "puppeteer";
 import { getLogger } from "log4js";
 import { screenshot, isLocatorReady } from "../util";
-
-const logger = getLogger("eaModule-menu");
+export interface PlainObject<T = any> {
+  [key: string]: T;
+}
+const logger = getLogger("eaModule-menuBar");
 const currentProd = process.env["PROD_NAME"];
-
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15");
+const TimeOutOption: PlainObject = {
+  waitUntil: ["domcontentloaded"],
+  timeout: NAV_TIMEOUT * 1000
+};
+const AllMenuContainer = ".jazz-menu > *";
+
+let OnlineMenuConfig: PlainObject = [];
+
+async function handleCheckUnitPage(
+  index: string,
+  menu: PlainObject,
+  page: puppeteer.Page,
+  config: config.Config
+) {
+  let time: PlainObject = {};
+  try {
+    const path = menu.href;
+    logger.info(path, "path");
+    // 一级菜单
+    if (path) {
+      logger.info("info to path");
+      time.before = new Date();
+      await menu.ele.click();
+
+      await page
+        .waitForSelector(
+          basicConfig[Number(index)].checkSelector,
+          TimeOutOption
+        )
+        .catch((e: any) => {
+          const ele = basicConfig[Number(index)];
+          logger.warn(
+            `menu ${ele.name} element[${ele.checkSelector}] was not found or not shown`
+          );
+        });
+      await page
+        .waitForSelector(basicConfig[Number(index)].validClass, TimeOutOption)
+        .catch((e: any) => {
+          const ele = basicConfig[Number(index)];
+          logger.warn(
+            `menu ${ele.name} element[${ele.validClass}] was not found or not shown`
+          );
+        });
+      time.after = new Date();
+      logger.info(time, "time is");
+      return time;
+    }
+    logger("no path", menu.ele);
+    await menu.ele.hover();
+    // await page.waitForSelector(SubMenuContainerSelector);
+
+    // const subItems = await page.$$eval(SubItemSelector, submenu => {
+    //   return [...submenu].map(item => {
+    //     return {
+    //       text: item.textContent
+    //     }
+    //   });
+    // })
+
+    // for (let idx in subItems) {
+    //   // 查找二级菜单子元素
+    //   const childConfig = basicConfig[Number(index)].children[Number(idx)];
+    //   // 如果是配置过的项目
+    //   if (childConfig.name === subItems[idx].text) {
+    //     await gotoSubMenuPage({
+    //       idx,
+    //       childConfig,
+    //       parentEle: menu.ele
+    //     }).catch(e => {
+    //       logger.warn(`submenu ${e.name} was not found or not shown`)
+    //     });
+    //   }
+    // }
+  } catch (error) {
+    // 捕获一级菜单的错误
+    const ele = basicConfig[Number(index)];
+    return Promise.reject({
+      page: ele.key,
+      element: ele.checkSelector
+    });
+  }
+}
+
+async function selectMenu(config: config.Config, page: puppeteer.Page) {
+  const onlineMenus = await page.$$(AllMenuContainer);
+  logger.info("info Menu ");
+  // 查找出所有线上的一级菜单名
+  OnlineMenuConfig = await page.$$eval(AllMenuContainer, menus => {
+    return [...menus].map(item => {
+      return {
+        href: item.getAttribute("href"),
+        text: item.textContent
+      };
+    });
+  });
+  logger.info(OnlineMenuConfig, "OnlineMenuConfig");
+
+  try {
+    for (let index in onlineMenus) {
+      // 未配置过的item 跳过
+      if (basicConfig[index].name !== OnlineMenuConfig[index].text) {
+        return;
+      }
+      logger.info(basicConfig[index].name, "basicConfig ");
+      OnlineMenuConfig[index]["ele"] = onlineMenus[index];
+      const time = await handleCheckUnitPage(
+        index,
+        OnlineMenuConfig[index],
+        page,
+        config
+      ).catch(async (e: any) => {
+        await screenshot(page, `error-${e.page}`);
+        logger.warn(`menu ${e.page} was not found submenu`);
+      });
+
+      // time &&
+      //   (await handleScreenShot(
+      //     time,
+      //     basicConfig[Number(index)].key,
+      //     config,
+      //     page
+      //   ));
+    }
+  } catch (e) {
+    await screenshot(page, `error-unknown`);
+    logger.warn(`page menus was not found or not shown`);
+  }
+}
 
 export default async (config: config.Config, page: puppeteer.Page) => {
-  logger.info("Into EA-menu");
+  logger.info("Into EA-menuBar");
+  await selectMenu(config, page);
   logger.info("next");
 };

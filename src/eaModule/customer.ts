@@ -32,10 +32,6 @@ async function setClasses(
   willSelected: puppeteer.ElementHandle,
   textClass: string
 ) {
-  if (variate === "buiding") {
-    logger.info(`${variate} setClasses parameter is`, classList);
-  }
-
   for (let ele of classList) {
     let textName = await ele.$eval(textClass, (node: any) => node.innerText);
     if (textName === textName1) {
