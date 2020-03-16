@@ -227,6 +227,7 @@ async function getBrowser() {
     ignoreHTTPSErrors: true,
     args,
     headless: false
+    // slowMo: 100,
     // devtools: true
   });
 

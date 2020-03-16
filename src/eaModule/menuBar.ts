@@ -140,17 +140,11 @@ async function selectMenu(config: config.Config, page: puppeteer.Page) {
   });
   logger.info(OnlineMenuConfig, "OnlineMenuConfig");
   try {
-    let timea = {};
     for (let index in onlineMenus) {
       // 未配置过的item 跳过
       logger.info("onlineMenus[index]");
       if (basicConfig[index].name !== OnlineMenuConfig[index].text) {
         return;
-      }
-
-      if (basicConfig[index].name == "智能诊断") {
-        timea["after"] = new Date();
-        logger.info("智能诊断Time", timea);
       }
 
       logger.info(basicConfig[index].name, "basicConfig ");
@@ -164,9 +158,7 @@ async function selectMenu(config: config.Config, page: puppeteer.Page) {
         await screenshot(page, `error-${e.page}`);
         logger.warn(`menu ${e.page} was not found submenu`);
       });
-      if (basicConfig[index].name == "节能效果") {
-        timea["before"] = new Date();
-      }
+
       // time &&
       //   (await handleScreenShot(
       //     time,
