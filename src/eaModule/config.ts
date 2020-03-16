@@ -1,30 +1,3 @@
-export interface buildingClassConfig {
-  buidingClass: string;
-  buidingTextClass: string;
-}
-export const buildingClassList: any = {
-  buidingClass:
-    "ul li div.select-customer-item-hierachylist div.select-customer-item-hierachylist-list div.select-customer-item-hierachylist-list-item",
-  buidingTextClass: ".select-customer-item-hierachylist-list-item-font"
-};
-export interface MenuItemConfig {
-  /** 菜单名称 */
-  key: string;
-
-  /** 用于匹配是否存在配置内 */
-  name: string;
-
-  /** 页面待检查的元素 */
-  checkSelector?: string;
-  /** 选中页面后加载成功的页面元素 */
-  validClass: string;
-  /** 子元素节点 */
-  children?: MenuItemConfig[];
-
-  /** 指定跳转的url地址 */
-  url?: string;
-}
-
 export const basicConfig: Array<any> = [
   {
     key: "home_main",
