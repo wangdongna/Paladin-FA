@@ -1,5 +1,4 @@
 import * as config from "../prodConfig";
-import { buildingClassList } from "./config";
 import * as puppeteer from "puppeteer";
 import { getLogger } from "log4js";
 import { screenshot, isLocatorReady } from "../util";
