@@ -81,6 +81,7 @@ export async function main(config: config.Config, page: puppeteer.Page) {
 
     for (let i = 0; i < itaConfig.menuItems.length; i++) {
       let cfgItem = itaConfig.menuItems[i];
+      logger.info(`currently checking ${cfgItem.text}`);
       let lastCfgItem =
         i <= 1 ? itaConfig.menuItems[0] : itaConfig.menuItems[i - 1];
       let eleItem: puppeteer.ElementHandle<Element>;
