@@ -73,12 +73,36 @@ async function getCheckElementHandle(
   }
   return rst;
 }
+async function validTaskCenter(
+  config: config.Config,
+  eleItemTask: puppeteer.ElementHandle<Element>,
+  cfgItemTask: any,
+  page: puppeteer.Page) {
+  let startTime: any = new Date();
+  let endTime: any = new Date();
+  let duration: number = 0;
+  let rst;
+  let currentPage = page;
+  try {
+    eleItemTask.click();
+    await page.waitFor(1000);
+    rst = await page.$(cfgItemTask.validClass)
+    var imgName = `${cfgItemTask.name}-${rst ? "success" : "error"}`;
+    await screenshot(currentPage, imgName);
+    endTime = new Date();
+    duration = (endTime - startTime) / 1000;
+    pushDuration(config.prodAlias, duration, cfgItemTask.name);
+    return rst;
+  } catch {
+    logger.warn(`task center not found`)
+  }
+}
+
 
 export async function main(config: config.Config, page: puppeteer.Page) {
   pageFirstUrl = page.url();
   if (itaConfig != null && itaConfig.menuItems != null) {
     let rootMenuList = await page.$$(itaConfig.menuSelector);
-
     for (let i = 0; i < itaConfig.menuItems.length; i++) {
       let cfgItem = itaConfig.menuItems[i];
       logger.info(`currently checking ${cfgItem.text}`);
@@ -105,10 +129,14 @@ export async function main(config: config.Config, page: puppeteer.Page) {
       eleItem = await getCheckElementHandle(page, rootMenuList, cfgItem);
       if (eleItem != null) {
         await validMenu(config, eleItem, cfgItem, page);
+        let eleItemTask = await page.$('.task-center')
+        let cfgItemTask = itaConfig.taskCenterItem
+        await validTaskCenter(config, eleItemTask, cfgItemTask,page);
       } else {
         logger.info("eleItem", eleItem);
         logger.warn(`menu ${cfgItem.name} was not found and not shown`);
       }
     }
+
   }
 }
