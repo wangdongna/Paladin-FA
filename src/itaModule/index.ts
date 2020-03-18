@@ -8,7 +8,7 @@ import e = require("express");
 
 const logger = getLogger("itaModule");
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15");
-const timeoutOption = { timeout: NAV_TIMEOUT * 1000 * 3 };
+const timeoutOption = { timeout: NAV_TIMEOUT * 1000 };
 let pageFirstUrl;
 
 /**
