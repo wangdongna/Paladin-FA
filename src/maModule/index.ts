@@ -2,7 +2,7 @@ import * as config from "../prodConfig"
 import * as puppeteer from "puppeteer"
 import { getLogger } from "log4js"
 import { screenshot, isLocatorReady } from '../util';
-import {pushDuration} from '../pushGateway';
+import {pushDuration, pushMenuStatus} from '../pushGateway';
 import maConfig from "./config"
 import e = require("express");
 
@@ -48,8 +48,10 @@ async function validMenu(config: config.Config, eleItem: puppeteer.ElementHandle
   }
   if (checkCount >= cfgItem.validClass.length) {
     logger.info(`menu ${cfgItem.name} element[${cfgItem.validClass}] check success`);
+    pushMenuStatus(config.prodAlias, cfgItem.name, 0);
   } else {
     logger.error(`menu ${cfgItem.name} element[${cfgItem.validClass}] check failed`);
+    pushMenuStatus(config.prodAlias, cfgItem.name, 1);
   }  
   var imgName = `${cfgItem.name}-${rst ? "success" :"error"}`;
   await screenshot(currentPage, imgName);
