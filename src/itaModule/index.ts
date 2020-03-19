@@ -91,7 +91,7 @@ export async function main(config: config.Config, page: puppeteer.Page) {
           `last menu[${lastCfgItem.name}] is out link, page go back to first url: `
         );
         // await page.bringToFront(); // 返回上一页
-        await page.goto(pageFirstUrl);
+        await page.goto(pageFirstUrl, timeoutOption);
         await page.waitForNavigation();
       }
       if (cfgItem.isSubMenu && cfgItem.hoverSelector != null) {
