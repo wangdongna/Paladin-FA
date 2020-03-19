@@ -65,19 +65,28 @@ async function getCheckElementHandle(
   for (let i = 0; i < menuList.length; i++) {
     let eleMenu = menuList[i];
     let text = await eleMenu.evaluate(x => x.textContent);
-    if (text === cfgItem.text) {
+    let firstChildSpan = await eleMenu.$("span");
+    let firstChildText;
+    if (firstChildSpan != null) {
+      firstChildText = await firstChildSpan.evaluate(
+        x => x.firstChild?.textContent
+      );
+    }
+    if (text === cfgItem.text || firstChildText === cfgItem.text) {
       rst = eleMenu;
-      logger.debug(`matched menu[${cfgItem.name}] text=${text}`);
+      logger.debug(`matched menu[${cfgItem.name}] text=${cfgItem.text}`);
       break;
     }
   }
   return rst;
 }
+
 async function validTaskCenter(
   config: config.Config,
   eleItemTask: puppeteer.ElementHandle<Element>,
   cfgItemTask: any,
-  page: puppeteer.Page) {
+  page: puppeteer.Page
+) {
   let startTime: any = new Date();
   let endTime: any = new Date();
   let duration: number = 0;
@@ -86,7 +95,7 @@ async function validTaskCenter(
   try {
     eleItemTask.click();
     await page.waitFor(1000);
-    rst = await page.$(cfgItemTask.validClass)
+    rst = await page.$(cfgItemTask.validClass);
     var imgName = `${cfgItemTask.name}-${rst ? "success" : "error"}`;
     await screenshot(currentPage, imgName);
     endTime = new Date();
@@ -94,10 +103,9 @@ async function validTaskCenter(
     pushDuration(config.prodAlias, duration, cfgItemTask.name);
     return rst;
   } catch {
-    logger.warn(`task center not found`)
+    logger.warn(`task center not found`);
   }
 }
-
 
 export async function main(config: config.Config, page: puppeteer.Page) {
   pageFirstUrl = page.url();
@@ -129,14 +137,13 @@ export async function main(config: config.Config, page: puppeteer.Page) {
       eleItem = await getCheckElementHandle(page, rootMenuList, cfgItem);
       if (eleItem != null) {
         await validMenu(config, eleItem, cfgItem, page);
-        let eleItemTask = await page.$('.task-center')
-        let cfgItemTask = itaConfig.taskCenterItem
-        await validTaskCenter(config, eleItemTask, cfgItemTask,page);
+        let eleItemTask = await page.$(".task-center");
+        let cfgItemTask = itaConfig.taskCenterItem;
+        await validTaskCenter(config, eleItemTask, cfgItemTask, page);
       } else {
         logger.info("eleItem", eleItem);
         logger.warn(`menu ${cfgItem.name} was not found and not shown`);
       }
     }
-
   }
 }
