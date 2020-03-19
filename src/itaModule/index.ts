@@ -68,8 +68,8 @@ async function getCheckElementHandle(
     let firstChildSpan = await eleMenu.$("span");
     let firstChildText;
     if (firstChildSpan != null) {
-      firstChildText = await firstChildSpan.evaluate(
-        x => x.firstChild?.textContent
+      firstChildText = await firstChildSpan.evaluate(x =>
+        x.firstChild == null ? null : x.firstChild.textContent
       );
     }
     if (text === cfgItem.text || firstChildText === cfgItem.text) {
