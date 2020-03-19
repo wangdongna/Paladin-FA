@@ -51,15 +51,15 @@ let config = {
       isOutLink: false,
       validClass: ".pop-report"
     },
-    {
-      name: "physics",
-      text: "IoT物理网关",
-      isSubMenu: true,
-      isOutLink: true,
-      hoverSelector: "li.main-menu-has-subMenuList",
-      subMenuSelector: '.ant-menu-vertical[role="menu"] > li',
-      validClass: ".gateway"
-    },
+    // {
+    //   name: "physics",
+    //   text: "IoT物理网关",
+    //   isSubMenu: true,
+    //   isOutLink: true,
+    //   hoverSelector: "li.main-menu-has-subMenuList",
+    //   subMenuSelector: '.ant-menu-vertical[role="menu"] > li',
+    //   validClass: ".gateway"
+    // },
     {
       name: "offline-alarm",
       text: "网关离线报警",
@@ -68,23 +68,23 @@ let config = {
       hoverSelector: "li.main-menu-has-subMenuList",
       subMenuSelector: '.ant-menu-vertical[role="menu"] > li',
       validClass: ".pop-alarm"
-    },
-    {
-      name: "template",
-      text: "模板库管理",
-      isSubMenu: true,
-      isOutLink: true,
-      hoverSelector: "li.main-menu-has-subMenuList",
-      subMenuSelector: '.ant-menu-vertical[role="menu"] > li',
-      validClass: ".template"
-    },
-    {
-      name: "board",
-      text: "数据看板",
-      isSubMenu: false,
-      isOutLink: true,
-      validClass: ".board-container"
     }
+    // {
+    //   name: "template",
+    //   text: "模板库管理",
+    //   isSubMenu: true,
+    //   isOutLink: true,
+    //   hoverSelector: "li.main-menu-has-subMenuList",
+    //   subMenuSelector: '.ant-menu-vertical[role="menu"] > li',
+    //   validClass: ".template"
+    // },
+    // {
+    //   name: "board",
+    //   text: "数据看板",
+    //   isSubMenu: false,
+    //   isOutLink: true,
+    //   validClass: ".board-container"
+    // }
   ]
 };
 

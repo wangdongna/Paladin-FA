@@ -8,7 +8,7 @@ import e = require("express");
 
 const logger = getLogger("itaModule");
 const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15");
-const timeoutOption = { timeout: NAV_TIMEOUT * 1000 * 3 };
+const timeoutOption = { timeout: NAV_TIMEOUT * 1000 };
 let pageFirstUrl;
 
 /**
@@ -115,7 +115,7 @@ export async function main(config: config.Config, page: puppeteer.Page) {
           `last menu[${lastCfgItem.name}] is out link, page go back to first url: `
         );
         // await page.bringToFront(); // 返回上一页
-        await page.goto(pageFirstUrl);
+        await page.goto(pageFirstUrl, timeoutOption);
         await page.waitForNavigation();
       }
       if (cfgItem.isSubMenu && cfgItem.hoverSelector != null) {
