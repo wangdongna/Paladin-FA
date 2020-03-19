@@ -1,6 +1,13 @@
 //该页面用于配置每个一级导航菜单的链接及相关验证内容
 let config = {
   menuSelector: ".pop-mainmenu li",
+  taskCenterItem: {
+    name: "task",
+    text: "任务中心",
+    isSubMenu: false,
+    isOutLink: false,
+    validClass: ".task-slider-item"
+  },
   menuItems: [
     {
       name: "myAsset",
