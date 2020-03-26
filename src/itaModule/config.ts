@@ -59,6 +59,15 @@ let config = {
       hoverSelector: "li.main-menu-has-subMenuList",
       subMenuSelector: '.ant-menu-vertical[role="menu"] > li',
       validClass: ".gateway"
+    },    
+    {
+      name: "ComXBOX",
+      text: "ComX BOX",
+      isSubMenu: true,
+      isOutLink: false,
+      hoverSelector: "li.main-menu-has-subMenuList",
+      subMenuSelector: '.ant-menu-vertical[role="menu"] > li',
+      validClass: ".new-gateway"
     },
     {
       name: "offline-alarm",
