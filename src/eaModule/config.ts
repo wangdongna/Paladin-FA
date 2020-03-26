@@ -140,13 +140,13 @@ export const contentPageConfig: Array<MenuConfigObject> = [
         validClass: ".header-bar"
       }
     ]
-  },
-  {
-    key: "dashborad",
-    name: "Dashboard",
-    validClass: ".board-view-top-menu",
-    outer: true
   }
+  // {
+  //   key: "dashborad",
+  //   name: "Dashboard",
+  //   validClass: ".board-view-top-menu",
+  //   outer: true
+  // }
 ];
 
 export const sysMgmtBtnClass = ".jazz-customer-or-function";
