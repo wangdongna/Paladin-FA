@@ -36,7 +36,7 @@ function getCurrentMain() {
 export default async (config: config.Config, page: puppeteer.Page) => {
   let prod = currentProd.toLowerCase()
   let customerName = getCustomerName()
-  if (prod !== "emop") {
+  if (prod !== "emop" && prod !=="ea") {
     let customerClass = config.customerClass
     let customerList = await page.$$(customerClass)
     let willSelectedCustomer: puppeteer.ElementHandle = null
@@ -52,7 +52,7 @@ export default async (config: config.Config, page: puppeteer.Page) => {
       return
     }
     logger.debug("find customer: %s", customerName)
-    if (prod !== "de" && prod !== "ea") {
+    if (prod !== "de") {
       await Promise.all([
         page.waitForNavigation(),
         willSelectedCustomer.click()

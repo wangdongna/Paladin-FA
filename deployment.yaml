@@ -44,6 +44,8 @@ spec:
           value: "${PALADIN_EA_PASSWORD}"
         - name: PALADIN_EA_CUSTOMERNAME
           value: "${PALADIN_EA_CUSTOMERNAME}"
+        - name: PALADIN_EA_BUILDINGNAME
+          value: "${PALADIN_EA_BUILDINGNAME}"  
         - name: PALADIN_FA_MAIN_URI
           value: "${PALADIN_FA_MAIN_URI}"
         - name: PALADIN_FA_USERNAME
