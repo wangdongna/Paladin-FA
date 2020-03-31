@@ -59,7 +59,7 @@ const gotoSubMenuPage = async (
     await newPage.waitForSelector(childConfig.validClass, TimeOutOption);
 
     const duration = (Number(new Date()) - Number(currentTime)) / 1000;
-    pushDuration(getProdAlias().prodAlias, duration, `menu ${childConfig.key}`);
+    pushDuration(getProdAlias().prodAlias, duration, `menu_${childConfig.key}`);
     // await handleScreenShot(
     //   currentTime,
     //   new Date(),
@@ -145,7 +145,7 @@ async function handleCheckUnitPage(
       await handleScreenShot(
         currentTime,
         new Date(),
-        `menu ${config.key}`,
+        `menu_${config.key}`,
         getProdAlias(),
         page
       );
