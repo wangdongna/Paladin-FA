@@ -61,29 +61,6 @@ let config = {
       "subMenuSelector":'[role="menu"] > li',
       "itemSelector":"网关离线报警",
       "validClass":["div.alarm-tab-item"]
-    },
-    {
-      "name":"IOTGatewayManagement",
-      "isSubMenu": true,
-      "isOutLink": true,
-      "hoverSelector":"div.pop-mainmenu-level-main",
-      "subMenuSelector":'[role="menu"] > li',
-      "itemSelector":"IoT",
-      "validClass":["div.gatewayBar"],
-    },
-    {
-      "name":"tagManagement",
-      "isSubMenu": false,
-      "isOutLink": true,
-      "itemSelector":"/tag/",
-      "validClass":["div.dropdown-group"],
-    },
-    {
-      "name":"dataEye",
-      "isSubMenu": false,
-      "isOutLink": true,
-      "itemSelector":"/dataeye",
-      "validClass":["div.board-view-top-menu"],
     }
   ]
 }
