@@ -220,8 +220,8 @@ export async function selectMenu(
   monitoredMenuConfig: Array<MenuConfigObject>,
   sourceLogger: Logger
 ) {
-  //录入数据菜单动态加载，所以延时1s等待加载
-  await page.waitFor(1000);
+  //录入数据菜单动态加载，所以延时2s等待加载
+  await page.waitFor(2000);
 
   currentTime = new Date();
   logger = sourceLogger;
