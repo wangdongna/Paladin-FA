@@ -10,7 +10,7 @@ const SubMenuContainerSelector = '[role="menu"]';
 const SubItemSelector = "[role='menu'] > div";
 const TimeOutOption = {
   // waitUntil: ["domcontentloaded"],
-  timeout: MENU_NAV_TIMEOUT * 1000
+  timeout: MENU_NAV_TIMEOUT * 1000,
 };
 
 var logger: Logger = null;
@@ -138,7 +138,7 @@ async function handleCheckUnitPage(
           );
           return Promise.reject({
             page: ele.key,
-            element: ele.validClass
+            element: ele.validClass,
           });
         });
 
@@ -169,10 +169,10 @@ async function handleCheckUnitPage(
       );
 
       const subItems = await page.$$(SubItemSelector);
-      const subItemsText = await page.$$eval(SubItemSelector, submenu => {
-        return [...submenu].map(item => {
+      const subItemsText = await page.$$eval(SubItemSelector, (submenu) => {
+        return [...submenu].map((item) => {
           return {
-            text: item.textContent
+            text: item.textContent,
           };
         });
       });
@@ -231,11 +231,11 @@ export async function selectMenu(
   let mainMenus = await page.$$(AllMenuContainer);
   let mainMenuConfig: Array<mainMenuObject> = await page.$$eval(
     AllMenuContainer,
-    menus => {
-      return [...menus].map(item => {
+    (menus) => {
+      return [...menus].map((item) => {
         return {
           hasSubMenus: item.childElementCount !== 0,
-          text: item.textContent
+          text: item.textContent,
         };
       });
     }
@@ -250,6 +250,13 @@ export async function selectMenu(
     );
 
     if (currentMonitoredMenuConfig) {
+      if (
+        currentMonitoredMenuConfig.children &&
+        !mainMenuConfig[index].hasSubMenus
+      ) {
+        continue;
+      }
+
       logger.info(
         "[selectMenu/selectMenu]::current menu is ",
         currentMonitoredMenuConfig.name
