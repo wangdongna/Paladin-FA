@@ -2,7 +2,7 @@ import * as config from "../prodConfig"
 import * as puppeteer from "puppeteer"
 import { getLogger } from "log4js"
 import { screenshot } from '../util';
-import { pushDuration, pushStatus } from "../pushGateway";
+import { pushDuration, pushMenuStatus } from "../pushGateway";
 
 const logger = getLogger("daModule")
 
@@ -73,17 +73,12 @@ const basicConfig: Array<MenuItemConfig> = [
         key: 'comxbox',
         name: 'ComX BOX',
         checkpointSelector: '.new-gateway'
-      },
-      {
-        key: 'iot',
-        name: 'IoT',
-        checkpointSelector: '.gateway',
-      },
+      }
     ]
   }
 ]
 
-const handleCheckUnitPage = async (index: string, menu: PlainObject, page: puppeteer.Page, config: config.Config): Promise<any> => {
+const handleCheckUnitPage = async (index: Number, menu: PlainObject, page: puppeteer.Page, config: config.Config): Promise<any> => {
   let time: PlainObject = {};
 
   const gotoSubMenuPage = async (params: PlainObject): Promise<void> => {
@@ -162,7 +157,7 @@ const handleCheckUnitPage = async (index: string, menu: PlainObject, page: puppe
       // 查找二级菜单子元素
       const childConfig = basicConfig[Number(index)].children[Number(idx)];
       // 如果是配置过的项目
-      if (childConfig.name === subItems[idx].text) {
+      if (childConfig && childConfig.name === subItems[idx].text) {
         await gotoSubMenuPage({
           idx,
           childConfig,
@@ -193,9 +188,11 @@ const handleScreenShot = async (t: PlainObject, screenname: string, config: conf
   // 处理是否超时的逻辑
   if (Math.round(duration) < Number(NAV_TIMEOUT)) {
     await screenshot(page, `${screenname}-success`)
+    pushMenuStatus(config.prodAlias, screenname, 0)
     logger.info(`menu ${screenname} check success`)
   } else {
     await screenshot(page, `error-${screenname}`)
+    pushMenuStatus(config.prodAlias, screenname, 1);
     logger.info(`menu ${screenname} check outtime`)
   }
 }
@@ -205,6 +202,7 @@ export async function main(config: config.Config, page: puppeteer.Page) {
 
   const onlineMenus = await page.$$(MenuContainerSelector);
 
+  await page.waitFor(500);
   // 查找出所有线上的一级菜单名
   OnlineMenuConfig = await page.$$eval(MenuContainerSelector, menus => {
     return [...menus].map(item => {
@@ -217,23 +215,25 @@ export async function main(config: config.Config, page: puppeteer.Page) {
 
   try {
     for (let index in onlineMenus) {
+      // 未配置过的item 跳过, 有些item后可能跟报警数值
+      const currentMenuIndex = basicConfig.findIndex(i => (i.name === OnlineMenuConfig[index].text || 
+        OnlineMenuConfig[index].text.indexOf(i.name) > -1));
 
-      // 未配置过的item 跳过
-      if (basicConfig[index].name !== OnlineMenuConfig[index].text) {
+      if (currentMenuIndex === -1) {
         return;
       }
-      
+
       OnlineMenuConfig[index]['ele'] = onlineMenus[index];
-      const time = await handleCheckUnitPage(index, OnlineMenuConfig[index], page, config).catch(async e => {
+      const time = await handleCheckUnitPage(currentMenuIndex, OnlineMenuConfig[index], page, config).catch(async e => {
         await screenshot(page, `error-${e.page}`);
+        pushMenuStatus(config.prodAlias, e.page, 1);
         logger.warn(`menu ${e.page} was not found submenu`)
       });
 
-      time && await handleScreenShot(time, basicConfig[Number(index)].key, config, page);
+      time && await handleScreenShot(time, basicConfig[Number(currentMenuIndex)].key, config, page);
 
     }
   } catch (e) {
-    await screenshot(page, `error-unknown`)
-    logger.warn(`page menus was not found or not shown`)
+    logger.warn(`error-unknown, page menus was not found or not shown`)
   }
 }
