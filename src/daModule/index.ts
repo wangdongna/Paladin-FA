@@ -202,6 +202,7 @@ export async function main(config: config.Config, page: puppeteer.Page) {
 
   const onlineMenus = await page.$$(MenuContainerSelector);
 
+  await page.waitFor(500);
   // 查找出所有线上的一级菜单名
   OnlineMenuConfig = await page.$$eval(MenuContainerSelector, menus => {
     return [...menus].map(item => {
@@ -216,7 +217,7 @@ export async function main(config: config.Config, page: puppeteer.Page) {
     for (let index in onlineMenus) {
       // 未配置过的item 跳过, 有些item后可能跟报警数值
       const currentMenuIndex = basicConfig.findIndex(i => (i.name === OnlineMenuConfig[index].text || 
-        OnlineMenuConfig[index].text.indexOf(i.name) > 0));
+        OnlineMenuConfig[index].text.indexOf(i.name) > -1));
 
       if (currentMenuIndex === -1) {
         return;
@@ -233,7 +234,6 @@ export async function main(config: config.Config, page: puppeteer.Page) {
 
     }
   } catch (e) {
-    await screenshot(page, `error-unknown`)
     logger.warn(`error-unknown, page menus was not found or not shown`)
   }
 }
