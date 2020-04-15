@@ -4,7 +4,6 @@ import { getLogger } from "log4js";
 import { screenshot, isLocatorReady } from '../util';
 import {pushDuration} from '../pushGateway';
 import faConfig from "./config"
-import e = require("express");
 
 const logger = getLogger("faModule")
 const timeoutOption = { timeout: 10000 };
@@ -93,7 +92,9 @@ export async function main(config: config.Config, page: puppeteer.Page) {
         await page.waitForNavigation();
       }
       if (cfgItem.isSubMenu && cfgItem.hoverSelector != null) {
+        await page.waitFor(3000);
         await page.hover(cfgItem.hoverSelector);
+        await page.waitFor(2000);
         rootMenuList = await page.$$(cfgItem.subMenuSelector);   
       }
       else {

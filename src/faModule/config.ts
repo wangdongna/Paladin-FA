@@ -30,7 +30,7 @@ let config = {
         "isSubMenu": true,
         "isOutLink": false,
         "hoverSelector":"ul.ant-menu.menu-content>:nth-child(6)",
-        "subMenuSelector":'ul[id*=maintenance]>li',
+        "subMenuSelector":'ul[id*=maintenance]>:nth-child(2)',
         "itemSelector":"工单管理",
         "validClass":["div.ant-row.ticket-management-main-page"]
       },
@@ -39,9 +39,9 @@ let config = {
         "isSubMenu": true,
         "isOutLink": false,
         "hoverSelector":"ul.ant-menu.menu-content>:nth-child(6)",
-        "subMenuSelector":'ul[id*=maintenance]>li',
+        "subMenuSelector":'ul[id*=maintenance]>:nth-child(3)',
         "itemSelector":"作业程序",
-        "validClass":["div.ant-row.ticket-management-main-page"]
+        "validClass":["div.inspection-plan-header"]
       },
       {
         "name":"doc",
@@ -71,7 +71,7 @@ let config = {
         "isSubMenu": true,
         "isOutLink": false,
         "hoverSelector":"ul.ant-menu.menu-content>:nth-child(12)",
-        "subMenuSelector":'ul[id*=diagnose]>li',
+        "subMenuSelector":'ul[id*=diagnose]>:nth-child(2)',
         "itemSelector":"改进方案",
         "validClass":["div.tab-row"]
       },
@@ -80,61 +80,9 @@ let config = {
         "isSubMenu": true,
         "isOutLink": false,
         "hoverSelector":"ul.ant-menu.menu-content>:nth-child(12)",
-        "subMenuSelector":'ul[id*=diagnose]>li',
+        "subMenuSelector":'ul[id*=diagnose]>:nth-child(3)',
         "itemSelector":"数据分析",
         "validClass":["div.data-analysis"]
-      },
-      {
-        "name":"tag",
-        "isSubMenu": true,
-        "isOutLink": true,
-        "hoverSelector":"ul.ant-menu.menu-content>:nth-child(12)",
-        "subMenuSelector":'ul[id*=diagnose]>li',
-        "itemSelector":"数据点管理",
-        "validClass":["div.dropdown-group"]
-      },
-      {
-        "name":"comXGateway",
-        "isSubMenu": true,
-        "isOutLink": false,
-        "hoverSelector":"ul.ant-menu.menu-content>:nth-child(14)",
-        "subMenuSelector":'ul[id*=gateway]>li',
-        "itemSelector":"2015版BOX",
-        "validClass":["div.dropdown-group"]
-      },
-      {
-        "name":"IOTGateway",
-        "isSubMenu": true,
-        "isOutLink": true,
-        "hoverSelector":"ul.ant-menu.menu-content>:nth-child(14)",
-        "subMenuSelector":'ul[id*=gateway]>li',
-        "itemSelector":"LVCOMXBOX",
-        "validClass":["div.gatewayBar"]
-      },
-      {
-        "name":"vitualGateway",
-        "isSubMenu": true,
-        "isOutLink": true,
-        "hoverSelector":"ul.ant-menu.menu-content>:nth-child(14)",
-        "subMenuSelector":'ul[id*=gateway]>li',
-        "itemSelector":"虚拟网关",
-        "validClass":["div.gatewayBar"]
-      },
-      {
-        "name":"template",
-        "isSubMenu": true,
-        "isOutLink": true,
-        "hoverSelector":"ul.ant-menu.menu-content>:nth-child(14)",
-        "subMenuSelector":'ul[id*=gateway]>li',
-        "itemSelector":"模板库管理",
-        "validClass":["div.template"]
-      },
-      {
-        "name":"dataEye",
-        "isSubMenu": false,
-        "isOutLink": true,
-        "itemSelector":"数据看板",
-        "validClass":["div.navigation-bar"]
       }
     ]
   }
