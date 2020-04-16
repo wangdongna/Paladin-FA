@@ -101,108 +101,51 @@ async function handleCheckUnitPage(
   config: MenuConfigObject,
   index: number
 ) {
-  try {
-    logger.info(
-      `[selectMenu/handleCheckUnitPage]::menu ${menu.text} has ${
-        menu.hasSubMenus ? "" : "no"
-      } subMenus `
-    );
+  logger.info(
+    `[selectMenu/handleCheckUnitPage]::menu ${menu.text} has ${
+      menu.hasSubMenus ? "" : "no"
+    } subMenus `
+  );
 
-    if (!menu.hasSubMenus) {
-      // 无二级菜单
-      if (index !== 0) {
-        //第一个菜单不用再去操作
-        await menu.ele.click();
-      }
+  if (!menu.hasSubMenus) {
+    // 无二级菜单
+    if (index !== 0) {
+      //第一个菜单不用再去操作
+      await menu.ele.click();
+    }
 
-      let newPage = page;
-      var pageList = [];
+    let newPage = page;
+    var pageList = [];
 
-      if (config.outer) {
-        await page.waitFor(2000);
-        pageList = await page.browser().pages();
-        if (pageList.length > 2) {
-          logger.info(
-            `[selectMenu/handleCheckUnitPage]::browser has ${pageList.length} pages`
-          );
-          newPage = pageList[pageList.length - 1];
-        }
-      }
-
-      await newPage
-        .waitForSelector(config.validClass, TimeOutOption)
-        .catch((e: any) => {
-          const ele = config;
-          logger.error(
-            `[selectMenu/handleCheckUnitPage]::menu ${ele.name} element[${ele.validClass}] was not found or not shown validClass`
-          );
-          return Promise.reject({
-            page: ele.key,
-            element: ele.validClass,
-          });
-        });
-
-      await handleScreenShot(
-        currentTime,
-        new Date(),
-        `menu_${config.key}`,
-        getProdAlias(),
-        page
-      );
-      currentTime = new Date();
-      logger.info(`[selectMenu/handleCheckUnitPage]::menu ${config.name} show`);
-
+    if (config.outer) {
+      await page.waitFor(2000);
+      pageList = await page.browser().pages();
       if (pageList.length > 2) {
-        logger.info(`[selectMenu/handleCheckUnitPage]::close new page`);
-        await newPage.close();
-      }
-    } else {
-      logger.info(
-        `[selectMenu/handleCheckUnitPage]::menu ${menu.text} has submenu`
-      );
-
-      await menu.ele.hover();
-      await page.waitForSelector(SubMenuContainerSelector);
-
-      logger.info(
-        `[selectMenu/handleCheckUnitPage]::menu ${menu.text} show sub menus`
-      );
-
-      const subItems = await page.$$(SubItemSelector);
-      const subItemsText = await page.$$eval(SubItemSelector, (submenu) => {
-        return [...submenu].map((item) => {
-          return {
-            text: item.textContent,
-          };
-        });
-      });
-
-      logger.info(
-        `[selectMenu/handleCheckUnitPage]::menu ${menu.text}'s subItems:`,
-        subItemsText
-      );
-
-      for (let idx in subItemsText) {
-        //查找二级菜单子元素
-        const childConfigGroup = config.children;
-        const childConfig = childConfigGroup.find(
-          (item: any) => item.name === subItemsText[idx].text
+        logger.info(
+          `[selectMenu/handleCheckUnitPage]::browser has ${pageList.length} pages`
         );
-        // 如果是配置过的项目
-        if (childConfig) {
-          await gotoSubMenuPage(
-            childConfig,
-            subItems[idx],
-            subItemsText[idx].text,
-            page,
-            menu.ele,
-            //第一个菜单的第一个子菜单不用再去操作
-            index === 0 ? Number(idx) : 1
-          );
-        }
+        newPage = pageList[pageList.length - 1];
       }
     }
-  } catch (e) {
+
+    await newPage
+      .waitForSelector(config.validClass, TimeOutOption)
+      .catch((e: any) => {
+        const ele = config;
+        logger.error(
+          `[selectMenu/handleCheckUnitPage]::menu ${ele.name} element[${ele.validClass}] was not found or not shown validClass`
+        );
+        handleScreenShot(
+          currentTime,
+          new Date(),
+          `menu_${ele.key}`,
+          getProdAlias(),
+          page
+        );
+        logger.error(`page menu ${ele.name} was not found or not shown`);
+        throw new Error("select menu error");
+      });
+
     await handleScreenShot(
       currentTime,
       new Date(),
@@ -210,8 +153,58 @@ async function handleCheckUnitPage(
       getProdAlias(),
       page
     );
-    logger.error(`page menu ${config.name} was not found or not shown`);
-    throw new Error("select menu error");
+    currentTime = new Date();
+    logger.info(`[selectMenu/handleCheckUnitPage]::menu ${config.name} show`);
+
+    if (pageList.length > 2) {
+      logger.info(`[selectMenu/handleCheckUnitPage]::close new page`);
+      await newPage.close();
+    }
+  } else {
+    logger.info(
+      `[selectMenu/handleCheckUnitPage]::menu ${menu.text} has submenu`
+    );
+
+    await menu.ele.hover();
+    await page.waitForSelector(SubMenuContainerSelector);
+
+    logger.info(
+      `[selectMenu/handleCheckUnitPage]::menu ${menu.text} show sub menus`
+    );
+
+    const subItems = await page.$$(SubItemSelector);
+    const subItemsText = await page.$$eval(SubItemSelector, (submenu) => {
+      return [...submenu].map((item) => {
+        return {
+          text: item.textContent,
+        };
+      });
+    });
+
+    logger.info(
+      `[selectMenu/handleCheckUnitPage]::menu ${menu.text}'s subItems:`,
+      subItemsText
+    );
+
+    for (let idx in subItemsText) {
+      //查找二级菜单子元素
+      const childConfigGroup = config.children;
+      const childConfig = childConfigGroup.find(
+        (item: any) => item.name === subItemsText[idx].text
+      );
+      // 如果是配置过的项目
+      if (childConfig) {
+        await gotoSubMenuPage(
+          childConfig,
+          subItems[idx],
+          subItemsText[idx].text,
+          page,
+          menu.ele,
+          //第一个菜单的第一个子菜单不用再去操作
+          index === 0 ? Number(idx) : 1
+        );
+      }
+    }
   }
 }
 
