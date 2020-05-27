@@ -135,6 +135,7 @@ const timeoutOption = { timeout: CLICK_TIMEOUT }
 let checkRoleList = ""
 let lastAction = ""
 
+
 async function run(page: puppeteer.Page, config: config.Config) {
   checkRoleList = `${config.codeName}-ui`;
   let startTime: any = new Date()
