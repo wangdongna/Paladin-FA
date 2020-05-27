@@ -53,7 +53,7 @@ initOssClient(endpoint,
   bucket)
 
 const app = express()
-const port = 3001
+const port = 3000
 const register = promClient.register
 
 
@@ -132,6 +132,7 @@ const timeoutOption = { timeout: CLICK_TIMEOUT }
 
 let checkRoleList = ""
 let lastAction = ""
+
 
 async function run(page: puppeteer.Page, config: config.Config) {
   checkRoleList = `${config.codeName}-ui`;
