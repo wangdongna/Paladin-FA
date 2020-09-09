@@ -6,7 +6,7 @@ import { pushDuration } from "../pushGateway";
 import faConfig from "./config";
 
 const logger = getLogger("faModule");
-const timeoutOption = { timeout: 10000 };
+const timeoutOption = { timeout: 20000 };
 
 /**
  * @description 单独校验每一个菜单的配置项
