@@ -6,8 +6,6 @@ import contentPage from "./contentPage";
 
 const logger = getLogger("eaModule");
 
-
-
 export async function main(config: config.Config, page: puppeteer.Page) {
   logger.info("Into EA-Main");
 

@@ -78,7 +78,7 @@ async function getCheckElementHandle(
   let rst: puppeteer.ElementHandle<Element>;
   for (let i = 0; i < menuList.length; i++) {
     let eleMenu = menuList[i];
-    let text = await eleMenu.evaluate((x) => x.innerHTML);
+    let text = await eleMenu.evaluate(x => x.innerHTML);
     if (text != null && text.indexOf(cfgItem.itemSelector) >= 0) {
       rst = eleMenu;
       logger.info(
@@ -94,11 +94,11 @@ export async function main(config: config.Config, page: puppeteer.Page) {
   if (!faConfig || !faConfig.menuItems) {
     return;
   }
-  
+
   let rootMenuList = await page.$$(faConfig.menuSelector);
   await page.waitForSelector("div.pop-map-switch>a", timeoutOption);
   let mapItem = await page.$("div.pop-map-switch>a");
-  let firstUrl = await mapItem.evaluate((x) => x.getAttribute("href"));
+  let firstUrl = await mapItem.evaluate(x => x.getAttribute("href"));
   let mapIndex = firstUrl.indexOf("map");
   firstUrl = config.mainUri + firstUrl.substring(0, mapIndex - 1);
   logger.info("the first url is %s", firstUrl);
