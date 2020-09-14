@@ -6,7 +6,7 @@ import { pushDuration } from "../pushGateway";
 import faConfig from "./config";
 
 const logger = getLogger("faModule");
-const timeoutOption = { timeout: 20000 };
+const timeoutOption = { timeout: 15000 };
 
 /**
  * @description 单独校验每一个菜单的配置项
@@ -22,15 +22,9 @@ async function validateMenu(
   let startTime: any = new Date();
   let endTime: any = new Date();
   let duration: number = 0;
-  let rst = false;
+  let rst = null;
   let currentPage = page;
   eleItem.click();
-
-  if (cfgItem.isOutLink) {
-    await page.waitFor(20000);
-    const pageList = await page.browser().pages();
-    currentPage = pageList[pageList.length - 1];
-  }
 
   let checkCount = 0;
   for (let i = 0; i < cfgItem.validClass.length; i++) {
@@ -101,31 +95,19 @@ export async function main(config: config.Config, page: puppeteer.Page) {
   let firstUrl = await mapItem.evaluate(x => x.getAttribute("href"));
   let mapIndex = firstUrl.indexOf("map");
   firstUrl = config.mainUri + firstUrl.substring(0, mapIndex - 1);
+
   logger.info("the first url is %s", firstUrl);
 
   for (let i = 0; i < faConfig.menuItems.length; i++) {
-    let cfgItem = faConfig.menuItems[i];
-    let lastCfgItem =
-      i <= 1 ? faConfig.menuItems[0] : faConfig.menuItems[i - 1];
-    let eleItem: puppeteer.ElementHandle<Element>;
-    if (lastCfgItem.isOutLink) {
-      //如果上次的连接时外链已经跳转到其他页面了，则首先跳回来
-      logger.info(
-        `last menu[${lastCfgItem.name}] is out link, page go back to first url: ${firstUrl}`
-      );
-      await page.goto(firstUrl);
-      await page.waitForNavigation();
-    }
+    const cfgItem = faConfig.menuItems[i];
     if (cfgItem.isSubMenu && cfgItem.hoverSelector != null) {
-      await page.waitFor(500);
       await page.hover(cfgItem.hoverSelector);
-      await page.waitFor(100);
       rootMenuList = await page.$$(cfgItem.subMenuSelector);
     } else {
       rootMenuList = await page.$$(faConfig.menuSelector);
     }
 
-    eleItem = await getCheckElementHandle(page, rootMenuList, cfgItem);
+    const eleItem = await getCheckElementHandle(page, rootMenuList, cfgItem);
     if (eleItem != null) {
       await validateMenu(config, eleItem, cfgItem, page);
     } else {

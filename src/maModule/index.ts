@@ -23,7 +23,7 @@ async function validMenu(
   let startTime: any = new Date();
   let endTime: any = new Date();
   let duration: number = 0;
-  let rst = false;
+  let rst = null;
   let currentPage = page;
   eleItem.click();
   if (cfgItem.isOutLink) {

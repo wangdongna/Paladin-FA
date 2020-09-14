@@ -214,6 +214,7 @@ async function getBrowser() {
     args.push("--proxy-server=101.231.121.17:80");
   }
   let browser = await puppeteer.launch({
+    headless: process.env.NODE_ENV !== "debug",
     defaultViewport: {
       width: 1920,
       height: 1080
