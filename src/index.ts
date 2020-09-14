@@ -14,8 +14,6 @@ import {
   upload,
   initOssClient
 } from "./util";
-//import checkMainFeatures from "./mainFeatures"
-import checkMainFeatures from "./faModule";
 import login from "./login";
 
 const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG";
@@ -110,15 +108,11 @@ app.listen(port, () => {
 
 async function createPage(browser: puppeteer.Browser) {
   const page = await browser.newPage();
-  // page.setCacheEnabled(false)
   page.setUserAgent(
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36 Paladin"
   );
   page.setDefaultNavigationTimeout(NAV_TIMEOUT);
   page.setRequestInterception(true);
-  // page.on("requestfailed", (request) => {
-  //   logger.debug("requestfailed: %s", request.url())
-  // })
   page.on("response", response => {
     if (!response.ok() && response.status() >= 400) {
       logger.debug(
@@ -189,7 +183,6 @@ async function run(page: puppeteer.Page, config: config.Config) {
     let responses = await Promise.all([
       await page.click(config.loginButtonClass),
       await page.waitForNavigation(navigationOption)
-      // await page.waitForNavigation(navigationOption)
     ]);
     responses.forEach((item: any) => {
       if (item && item.url) {
@@ -203,11 +196,8 @@ async function run(page: puppeteer.Page, config: config.Config) {
 
   await login(config, page);
 
-  await checkMainFeatures(config, page);
+  // await checkMainFeatures(config, page);
 }
-
-// uploadAndCleanImage()
-// cleanImage()
 
 async function getBrowser() {
   let args = ["--lang=zh-cn"];
@@ -216,7 +206,7 @@ async function getBrowser() {
     args.push("--proxy-server=101.231.121.17:80");
   }
   let browser = await puppeteer.launch({
-    headless: false,
+    headless: process.env.NODE_ENV !== "debug",
     defaultViewport: {
       width: 1920,
       height: 1080
@@ -236,7 +226,7 @@ async function start() {
   logger.info("started");
   isEnd = false;
   try {
-    //cleanImage()
+    cleanImage();
     let config1 = config.configList.find(
       value => value.prodAlias.toLowerCase() === PROD_NAME
     );
@@ -264,8 +254,8 @@ async function start() {
       await page.close();
       notification.error(config1.prodName, error, checkRoleList);
     } finally {
-      //await upload(config1.prodName)
-      //cleanImage()
+      await upload(config1.prodName);
+      cleanImage();
       await browser.close();
       logger.info("browser closed");
     }

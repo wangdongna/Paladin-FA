@@ -1,4 +1,4 @@
-let config = {
+const config = {
   appenders: {
     console: {
       type: "console",
@@ -18,7 +18,6 @@ let config = {
     }
   },
   categories: {
-    // "default": { "appenders": [ "app", "errors" ], "level": "DEBUG" },
     default: { appenders: ["console"], level: "DEBUG" }
   }
 };

@@ -11,10 +11,10 @@ const logger = getLogger("util");
 const TROJAN_HOST = process.env["TROJAN_HOST"];
 const NODE_ENV = process.env["NODE_ENV"];
 
-export function getValidationCode(
-  id: string,
-  callback: (code: string) => Promise<void>
-) {
+export async function getVerificationCode(id: string): Promise<string> {
+  if (NODE_ENV === "debug") {
+    return "99";
+  }
   let uri = `${TROJAN_HOST}/validationCode/${id}`;
   if (uri.indexOf("http") < 0) {
     uri = "https://" + uri;
@@ -23,25 +23,20 @@ export function getValidationCode(
   request.get(uri, (error, response, body) => {
     if (error) {
       logger.error("error:", error);
-      callback("");
+      return "";
     } else {
       logger.info(
         "statusCode: %s, body: %s",
         response && response.statusCode,
         body
       );
-      callback(body);
+      return body;
     }
   });
 }
 
 export function isMaintaining() {
-  let status = process.env["IS_MAINTAINING"];
-  if (status === "1") {
-    return true;
-  }
-
-  return false;
+  return process.env["IS_MAINTAINING"] === "1";
 }
 
 function getImageName(key: string) {
@@ -118,10 +113,7 @@ export async function isLocatorReady(
       style.opacity !== "0"
     );
   }, element);
-  var visible = await isVisibleHandle.jsonValue();
+  const visible = await isVisibleHandle.jsonValue();
   const box = await element.boxModel();
-  if (visible && box) {
-    return true;
-  }
-  return false;
+  return visible && box;
 }

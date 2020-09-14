@@ -59,7 +59,7 @@ let config = {
       hoverSelector: "li.main-menu-has-subMenuList",
       subMenuSelector: '.ant-menu-vertical[role="menu"] > li',
       validClass: ".gateway"
-    },    
+    },
     {
       name: "ComXBOX",
       text: "ComX BOX",

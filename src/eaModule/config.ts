@@ -18,12 +18,12 @@ export const contentPageConfig: Array<MenuConfigObject> = [
   {
     key: "home",
     name: "首页概览",
-    validClass: ".jazz-home-main .jazz-home-main-chart",
+    validClass: ".jazz-home-main .jazz-home-main-chart"
   },
   {
     key: "kpi",
     name: "指标现状",
-    validClass: ".jazz-actuality-item .action-bar",
+    validClass: ".jazz-actuality-item .action-bar"
   },
 
   {
@@ -33,8 +33,8 @@ export const contentPageConfig: Array<MenuConfigObject> = [
       {
         key: "diagnosis",
         name: "诊断结果",
-        validClass: ".jazz-diagnose-problem-left-select-time",
-      },
-    ],
-  },
+        validClass: ".jazz-diagnose-problem-left-select-time"
+      }
+    ]
+  }
 ];
