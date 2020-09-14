@@ -12,10 +12,10 @@ cache: yarn
 
 env:
   global:
-  - PROJECT="Paladin"
-  - ROLE="App"
-  - PACKAGE_VERSION="v1.0.${TRAVIS_BUILD_NUMBER}"
-  - DOCKER_NS="se-rem-test"
+    - PROJECT="Paladin"
+    - ROLE="App"
+    - PACKAGE_VERSION="v1.0.${TRAVIS_BUILD_NUMBER}"
+    - DOCKER_NS="se-rem-test"
 
 before_script:
   - export ARTIFACT_NAME="${PROJECT}-${ROLE}-${TRAVIS_BRANCH}-${PACKAGE_VERSION}.zip"

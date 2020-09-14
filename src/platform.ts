@@ -1,15 +1,15 @@
 import { getLogger } from "log4js";
-import * as puppeteer from "puppeteer"
+import * as puppeteer from "puppeteer";
 import { screenshot } from "./util";
-import * as config from "./prodConfig"
+import * as config from "./prodConfig";
 
-const logger = getLogger("platform")
+const logger = getLogger("platform");
 
 interface CheckModel {
-  name: string
-  screenshotName: string
-  tabSelector: string
-  checkpointSelector: string
+  name: string;
+  screenshotName: string;
+  tabSelector: string;
+  checkpointSelector: string;
 }
 
 const platformCheckList: CheckModel[] = [
@@ -42,48 +42,42 @@ const platformCheckList: CheckModel[] = [
     screenshotName: "emop-access",
     tabSelector: "/access",
     checkpointSelector: "div.gateway-wrap"
-  },
-]
-
+  }
+];
 
 function getNonGatewayCheckList() {
-  return platformCheckList.filter((model) => model.name !== "gateway")
+  return platformCheckList.filter(model => model.name !== "gateway");
 }
 
 export async function main(config: config.Config, page: puppeteer.Page) {
-  let entryModel = platformCheckList[0]
+  let entryModel = platformCheckList[0];
   try {
-    await page.waitForSelector(entryModel.checkpointSelector)
-    logger.info("enter %s main page", entryModel.name)
-    await screenshot(page, `emop-entry-${entryModel.name}`)
+    await page.waitForSelector(entryModel.checkpointSelector);
+    logger.info("enter %s main page", entryModel.name);
+    await screenshot(page, `emop-entry-${entryModel.name}`);
+  } catch (exc) {
+    logger.error("enter emop %s, error", entryModel.name);
+    await screenshot(page, `error-entry-${entryModel.screenshotName}`);
+
+    return;
   }
-  catch (exc) {
-    logger.error("enter emop %s, error", entryModel.name)
-    await screenshot(page, `error-entry-${entryModel.screenshotName}`)
 
-    return
-  }
-
-
-  let restOfCheckList = getNonGatewayCheckList()
+  let restOfCheckList = getNonGatewayCheckList();
 
   for (let model of restOfCheckList) {
     try {
-      let tab = await page.$(`a[href='${model.tabSelector}'`)
-      await tab.click()
-      logger.info("click %s page", entryModel.name)
-      await page.waitForSelector(model.checkpointSelector)
-      logger.info("enter %s page", entryModel.name)
-      await screenshot(page, model.screenshotName)
+      let tab = await page.$(`a[href='${model.tabSelector}'`);
+      await tab.click();
+      logger.info("click %s page", entryModel.name);
+      await page.waitForSelector(model.checkpointSelector);
+      logger.info("enter %s page", entryModel.name);
+      await screenshot(page, model.screenshotName);
+    } catch (exc) {
+      logger.error("emop check %s, error", model.name);
+      await screenshot(page, `error-${model.screenshotName}`);
+      return;
     }
-    catch (exc) {
-      logger.error("emop check %s, error", model.name)
-      await screenshot(page, `error-${model.screenshotName}`)
-      return
-    }
-
   }
-
 }
 /*
   let tabList = await page.$$("li.ant-menu-submenu.ant-menu-submenu-horizontal")
