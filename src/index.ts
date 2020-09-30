@@ -15,6 +15,7 @@ import {
   initOssClient
 } from "./util";
 import login from "./login";
+import checkMainFeatures from "./faModule";
 
 const LOG_LEVEL = process.env["LOG_LEVEL"] || "DEBUG";
 
@@ -28,10 +29,10 @@ const bucket = process.env["OSS_BUCKET_DATA"];
 
 const PROD_NAME = process.env["PROD_NAME"];
 
-const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15") * 1000;
-const CLICK_TIMEOUT = parseInt(process.env["CLICK_TIMEOUT"] || "15") * 1000;
+const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15") * 2000;
+const CLICK_TIMEOUT = parseInt(process.env["CLICK_TIMEOUT"] || "15") * 2000;
 
-let envArgs: Array<string> = [
+const envArgs: Array<string> = [
   "TROJAN_HOST",
   "LOG_LEVEL",
   "NODE_ENV",
@@ -108,29 +109,7 @@ app.listen(port, () => {
 
 async function createPage(browser: puppeteer.Browser) {
   const page = await browser.newPage();
-  page.setUserAgent(
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36 Paladin"
-  );
   page.setDefaultNavigationTimeout(NAV_TIMEOUT);
-  page.setRequestInterception(true);
-  page.on("response", response => {
-    if (!response.ok() && response.status() >= 400) {
-      logger.debug(
-        "response maybe error: %s, %s",
-        response.status(),
-        response.url()
-      );
-    }
-  });
-  page.on("request", req => {
-    let resourceType = req.resourceType();
-    if (resourceType === "image") {
-      req.abort();
-    } else {
-      req.continue();
-    }
-  });
-
   return page;
 }
 
@@ -196,7 +175,7 @@ async function run(page: puppeteer.Page, config: config.Config) {
 
   await login(config, page);
 
-  // await checkMainFeatures(config, page);
+  await checkMainFeatures(config, page);
 }
 
 async function getBrowser() {
@@ -254,7 +233,7 @@ async function start() {
       await page.close();
       notification.error(config1.prodName, error, checkRoleList);
     } finally {
-      await upload(config1.prodName);
+      //await upload(config1.prodName);
       cleanImage();
       await browser.close();
       logger.info("browser closed");

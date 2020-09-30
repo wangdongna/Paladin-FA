@@ -5,6 +5,7 @@ import { screenshot, isLocatorReady } from "../util";
 import { pushDuration } from "../pushGateway";
 import faConfig from "./config";
 import manualDispatch from "./manualDispatch";
+import maintainplan from "./maintainplan";
 
 const timeoutOption = { timeout: 10000 };
 //import Customer from "./customer";
@@ -23,6 +24,8 @@ export default async (config: config.Config, page: puppeteer.Page) => {
   logger.info("Into FA");
 
   await manualDispatch(config, page);
+
+  //await maintainplan(config, page);
 
   // await contentPage(config, page);
 

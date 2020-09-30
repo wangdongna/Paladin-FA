@@ -10,8 +10,12 @@ const currentProd = process.env["PROD_NAME"];
 
 const dispatchHoverSelector: string = "ul.ant-menu.menu-content>:nth-child(6)";
 const dispatchSelector: string = "ul[id*=maintenance]>li";
+const searchbox: string = "div.search-spot";
+const spotSearchSelector: string =
+  "div.ant-select.ant-select-enabled.ant-select-allow-clear";
 const searchInputbox: string = "input.ant-select-search__field";
-const dispatchButtonSelector: string = "div.spot-popover-buttons";
+const dispatchButtonSelector: string =
+  "div.spot-popover-buttons>button.ant-btn.ant-btn-primary.ant-btn-sm";
 const executorCheckboxSelector: string = "input.ant-checkbox-input";
 const nextStepSelector: string =
   "div.dispatch-panel-drawer-footer>:nth-child(2)";
@@ -21,8 +25,14 @@ const dispatchRecordSelector: string = "div.dispatch-log-anchor";
 const dispatchRecordDetailSelector: string =
   "div.dipatch-log-accept-ticket-info-detail";
 const myassetSelector: string = "div.pop-asset";
+const ticketSelector: string = "ul[id*=maintenance]>:nth-child(3)";
+const allTicketSelector: string = "div.go-to-ticket-list";
+const ticketItemSelector: string = "tbody.ant-table-tbody>tr";
+const deleteTicketButtonSelector: string = "button.ant-btn";
+const deleteConfirmButtonSelector: string =
+  "div.ant-modal-confirm-btns>:nth-child(2)";
 
-const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "1500");
+const NAV_TIMEOUT = parseInt(process.env["NAV_TIMEOUT"] || "15");
 const timeOutOption: Object = {
   visible: true,
   timeout: NAV_TIMEOUT * 1000
@@ -33,29 +43,15 @@ async function openDispatch(config: config.Config, page: puppeteer.Page) {
   let endTime: any = new Date();
   let duration: number = 0;
 
-  let myAsset = await page.waitForSelector(myassetSelector, timeOutOption);
-
-  if (myAsset) {
-    logger.info("my asset shown");
-    await screenshot(page, "dispatch");
-    endTime = new Date();
-    duration = (endTime - startTime) / 1000;
-    pushDuration(config.prodAlias, duration, "myAsset_success");
-  } else {
-    logger.info("my asset not shown, url is: %s", page.url());
-    throw new Error("unknow error");
-  }
-
-  await page.waitFor(5000);
+  await page.waitForSelector(myassetSelector, timeOutOption);
+  await page.waitFor(2000);
   await page.hover(dispatchHoverSelector);
   await page.waitFor(1000);
   await page.click(dispatchSelector);
-  await page.waitFor(15000);
+  await page.waitFor(2000);
 
-  let dispatchItem = await page.waitForSelector(
-    dispatchButtonSelector,
-    timeOutOption
-  );
+  let dispatchItem = await page.waitForSelector(searchbox, timeOutOption);
+  logger.info("after get dispatch input");
 
   if (dispatchItem) {
     logger.info("dispatch shown");
@@ -77,6 +73,9 @@ async function createDispatchTicket(
   let endTime: any = new Date();
   let duration: number = 0;
 
+  await page.click(spotSearchSelector);
+  await page.waitFor(1000);
+
   await page.type(searchInputbox, "望京施耐德");
   await page.keyboard.down("Enter");
   await page.waitFor(5000);
@@ -97,6 +96,7 @@ async function createDispatchTicket(
   }
 
   await page.click(dispatchButtonSelector);
+  await page.waitFor(1000);
 
   let executorCheckbox = await page.waitForSelector(
     executorCheckboxSelector,
@@ -174,9 +174,36 @@ async function openDispatchRecord(config: config.Config, page: puppeteer.Page) {
   }
 }
 
+async function deleteUrgentTicket(config: config.Config, page: puppeteer.Page) {
+  let startTime: any = new Date();
+  let endTime: any = new Date();
+  let duration: number = 0;
+
+  await page.hover(dispatchHoverSelector);
+  await page.waitFor(1000);
+  await page.click(ticketSelector);
+  await page.waitFor(2000);
+  await page.click(allTicketSelector);
+  await page.waitFor(3000);
+
+  await page.click(ticketItemSelector);
+  await page.waitFor(2000);
+  await page.click(deleteTicketButtonSelector);
+  await page.waitFor(2000);
+  await page.click(deleteConfirmButtonSelector);
+  await page.waitFor(2000);
+  await page.waitForSelector(
+    "span.ant-page-header-heading-sub-title",
+    timeOutOption
+  );
+  await page.waitFor(2000);
+}
+
 export default async (config: config.Config, page: puppeteer.Page) => {
   logger.info("Into FA-Dispatch-Screen");
   await openDispatch(config, page);
   await createDispatchTicket(config, page);
+  await openDispatchRecord(config, page);
+  await deleteUrgentTicket(config, page);
   logger.info("next");
 };

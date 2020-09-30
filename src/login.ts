@@ -60,14 +60,12 @@ export default async (config: config.Config, page: puppeteer.Page) => {
       await page.waitForNavigation(navigationOption)
     ]);
 
-    logger.info("customer selection shown");
-
     responses.forEach((item: any) => {
       if (item && item.url) {
         logger.info("uri change to %s", item.url());
       }
     });
-    await page.waitForSelector(config.spMgmtClass, timeoutOption);
+    //await page.waitForSelector(config.spMgmtClass, timeoutOption);
 
     logger.info("login success");
 
