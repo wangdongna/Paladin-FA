@@ -3,6 +3,7 @@ import * as puppeteer from "puppeteer";
 import { getLogger } from "log4js";
 import { screenshot } from "../util";
 import { pushDuration } from "../pushGateway";
+import { response } from "express";
 //import { handleScreenShot } from "./util";
 
 const logger = getLogger("faModule-dispatch");
@@ -48,7 +49,7 @@ async function openDispatch(config: config.Config, page: puppeteer.Page) {
   await page.hover(dispatchHoverSelector);
   await page.waitFor(1000);
   await page.click(dispatchSelector);
-  await page.waitFor(2000);
+  await page.waitFor(10000);
 
   let dispatchItem = await page.waitForSelector(searchbox, timeOutOption);
   logger.info("after get dispatch input");
@@ -117,21 +118,24 @@ async function createDispatchTicket(
   await page.waitFor(1000);
   await page.click(nextStepSelector);
   await page.waitFor(1000);
-
-  let ticketDrawer = await page.waitForSelector(drawerSelector, timeOutOption);
-  if (ticketDrawer) {
-    logger.info("ticketDrawer shown");
-    await screenshot(page, "ticketDrawer");
-    endTime = new Date();
-    duration = (endTime - startTime) / 1000;
-    pushDuration(config.prodAlias, duration, "ticketDrawer_success");
-  } else {
-    logger.info("ticket drawer not shown, url is: %s", page.url());
-    throw new Error("unknow error");
-  }
-
+  await page.waitForSelector(drawerSelector, timeOutOption);
+  await page.on("response", async response => {
+    if (
+      response.url().endsWith("CreateUrgentRepairTicket") &&
+      response.status() === 200
+    ) {
+      console.log("request url", response.url());
+      console.log("request response status", response.status());
+      let responseValue = await response.text();
+      if (responseValue.includes('"CallingUserStatus":true')) {
+        console.log("create urgent ticket success");
+      } else {
+        console.log("create urgent ticket failed, url is: %s", page.url());
+        throw new Error("unknow error");
+      }
+    }
+  });
   await page.click(nextStepSelector);
-  await page.waitFor(1000);
 
   let dispatchPopover = await page.waitForSelector(
     dispatchPopoverSelector,
