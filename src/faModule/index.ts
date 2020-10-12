@@ -6,6 +6,9 @@ import { pushDuration } from "../pushGateway";
 import faConfig from "./config";
 import manualDispatch from "./manualDispatch";
 import maintainplan from "./maintainplan";
+import ticket from "./ticket";
+import diagnose from "./diagnose";
+import dataeye from "./dataeye";
 
 const timeoutOption = { timeout: 10000 };
 //import Customer from "./customer";
@@ -25,13 +28,13 @@ export default async (config: config.Config, page: puppeteer.Page) => {
 
   await manualDispatch(config, page);
 
-  //await maintainplan(config, page);
+  // await maintainplan(config, page);
 
-  // await contentPage(config, page);
+  // await ticket(config, page);
 
-  // await switchToSysMgmtPage(page);
+  // await diagnose(config, page);
 
-  // await sysMgmtPage(config, page);
+  // await dataeye(config, page);
 
   logger.info("leave FA");
 };
