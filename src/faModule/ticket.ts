@@ -53,6 +53,8 @@ async function createAndDeleteXCTicket(
   await page.type(ticketNameInputSelector, "望京施耐德现场工单");
   await page.click(assetScopeSelector);
   await page.click(assetNodeSelector);
+  await page.click("div.ticket-header");
+  await page.waitFor(1000);
   await page.click(SelectDateSelector);
   await page.click(TimeTodaySelector);
   await page.waitFor(1000);

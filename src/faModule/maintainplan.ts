@@ -59,9 +59,15 @@ async function createAndDeleteOtherPlan(
   await page.click(inspectionItemSelector);
   await page.waitFor(2000);
   await page.type(planNameInputSelector, "望京施耐德培训计划");
+  await page.waitFor(1000);
   await page.click(assetScopeSelector);
+  await page.waitFor(1000);
   await page.click(assetNodeSelector);
+  await page.waitFor(1000);
+  await page.click("div.pop-newplan-content");
+  await page.waitFor(1000);
   await page.click(SelectDateSelector);
+  await page.waitFor(1000);
   await page.click(TimeTodaySelector);
   await page.waitFor(1000);
   await page.click(TimeTodaySelector);
@@ -126,7 +132,7 @@ async function createAndDeleteOtherPlan(
   await page.waitFor(2000);
 
   let addPlanButtonItem = await page.waitForSelector(
-    addPlanButtonSelector,
+    "div.ant-empty-image",
     timeOutOption
   );
 

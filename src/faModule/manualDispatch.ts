@@ -45,11 +45,10 @@ async function openDispatch(config: config.Config, page: puppeteer.Page) {
   let duration: number = 0;
 
   await page.waitForSelector(myassetSelector, timeOutOption);
-  await page.waitFor(2000);
   await page.hover(dispatchHoverSelector);
-  await page.waitFor(1000);
+  await page.waitForSelector(dispatchSelector, timeOutOption);
   await page.click(dispatchSelector);
-  await page.waitFor(10000);
+  await page.waitFor(8000);
 
   let dispatchItem = await page.waitForSelector(searchbox, timeOutOption);
   logger.info("after get dispatch input");
@@ -75,11 +74,9 @@ async function createDispatchTicket(
   let duration: number = 0;
 
   await page.click(spotSearchSelector);
-  await page.waitFor(1000);
 
   await page.type(searchInputbox, "望京施耐德");
   await page.keyboard.down("Enter");
-  await page.waitFor(5000);
 
   let dispatchButton = await page.waitForSelector(
     dispatchButtonSelector,
@@ -97,7 +94,6 @@ async function createDispatchTicket(
   }
 
   await page.click(dispatchButtonSelector);
-  await page.waitFor(1000);
 
   let executorCheckbox = await page.waitForSelector(
     executorCheckboxSelector,
@@ -115,9 +111,7 @@ async function createDispatchTicket(
   }
 
   await page.click(executorCheckboxSelector);
-  await page.waitFor(1000);
   await page.click(nextStepSelector);
-  await page.waitFor(1000);
   await page.waitForSelector(drawerSelector, timeOutOption);
   await page.on("response", async response => {
     if (
@@ -159,7 +153,6 @@ async function openDispatchRecord(config: config.Config, page: puppeteer.Page) {
   let duration: number = 0;
 
   await page.click(dispatchRecordSelector);
-  await page.waitFor(5000);
 
   let dispatchRecordDetail = await page.waitForSelector(
     dispatchRecordDetailSelector,
@@ -184,23 +177,18 @@ async function deleteUrgentTicket(config: config.Config, page: puppeteer.Page) {
   let duration: number = 0;
 
   await page.hover(dispatchHoverSelector);
-  await page.waitFor(1000);
+  await page.waitForSelector(ticketSelector, timeOutOption);
   await page.click(ticketSelector);
-  await page.waitFor(2000);
+  await page.waitForSelector(allTicketSelector, timeOutOption);
   await page.click(allTicketSelector);
-  await page.waitFor(3000);
+  await page.waitForSelector(ticketItemSelector, timeOutOption);
 
   await page.click(ticketItemSelector);
-  await page.waitFor(2000);
+  await page.waitForSelector(deleteTicketButtonSelector, timeOutOption);
   await page.click(deleteTicketButtonSelector);
-  await page.waitFor(2000);
+  await page.waitForSelector(deleteConfirmButtonSelector, timeOutOption);
   await page.click(deleteConfirmButtonSelector);
-  await page.waitFor(2000);
-  await page.waitForSelector(
-    "span.ant-page-header-heading-sub-title",
-    timeOutOption
-  );
-  await page.waitFor(2000);
+  await page.waitForSelector("div.ant-empty-image", timeOutOption);
 }
 
 export default async (config: config.Config, page: puppeteer.Page) => {
