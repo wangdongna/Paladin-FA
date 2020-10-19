@@ -26,11 +26,11 @@ const switchToSysMgmtPage = async (page: puppeteer.Page) => {
 export default async (config: config.Config, page: puppeteer.Page) => {
   logger.info("Into FA");
 
-  // await manualDispatch(config, page);
+  await manualDispatch(config, page);
 
   // await maintainplan(config, page);
 
-  await ticket(config, page);
+  // await ticket(config, page);
 
   // await diagnose(config, page);
 
